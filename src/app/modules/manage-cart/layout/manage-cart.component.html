@@ -10,6 +10,23 @@
   </ng-template>
 
   <apt-alert [record]="cart" message="ERROR.CART.VALIDATE" [autoRun]="false"></apt-alert>
+  <div class="px-4 pt-2" *ngIf="isTaxState('calculating')">
+    <div class="alert alert-info d-flex align-items-center mb-0 py-1 px-3" role="alert">
+      <i class="fas fa-spinner fa-spin mr-2" aria-hidden="true"></i>
+      <span>{{ 'TAX.CALCULATING' | translate }}</span>
+    </div>
+  </div>
+  <div class="px-4 pt-2" *ngIf="isTaxState('stale')">
+    <div class="alert alert-warning d-flex justify-content-between align-items-center mb-0 py-1 px-3" role="alert">
+      <div class="d-flex align-items-center pr-3">
+        <i class="fas fa-exclamation-triangle mr-2" aria-hidden="true"></i>
+        <span [innerHTML]="'TAX.ITEMS_UPDATED' | translate"></span>
+      </div>
+      <button type="button" class="close p-0 ml-2" aria-label="Close" (click)="dismissTaxWarning()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  </div>
   <div class="container-fluid" [ngClass]="'py-2'">
     <div class="px-4">
       <div class="detail-header pb-2">
@@ -24,9 +41,18 @@
               </apt-output-field>
             </span>
 
-          <button *ngIf="!readOnly" class="btn btn-outline-primary align-self-center d-lg-block d-md-block d-sm-none d-none" [routerLink]="['/products']">
-            {{ "COMMON.ADD_PRODUCTS" | translate }}
-          </button>
+          <div class="d-flex align-items-center d-lg-flex d-md-flex d-sm-none d-none">
+            <button *ngIf="!readOnly" class="btn btn-outline-primary" [routerLink]="['/products']">
+              {{ "COMMON.ADD_PRODUCTS" | translate }}
+            </button>
+            <button *ngIf="isTaxEnabled && view?.orderOrQuote?.Id"
+              class="btn btn-primary ml-2"
+              [disabled]="!view?.lineItems?.length || isTaxState('calculating') || isTaxState('calculating-manual')"
+              [ladda]="isTaxState('calculating') || isTaxState('calculating-manual')" data-style="zoom-in"
+              (click)="calculateTax()">
+              {{ 'TAX.CALCULATE' | translate }}
+            </button>
+          </div>
           <apt-add-to-cart *ngIf="readOnly" [customButtonActions]="customButtonActions" [ngClass]="'d-lg-block d-md-block d-sm-none d-none'"
             [showQuantityControls]="false"></apt-add-to-cart>
           <div class="d-sm-flex d-flex ml-auto d-md-none d-lg-none mt-2 justify-content-end dropdown">

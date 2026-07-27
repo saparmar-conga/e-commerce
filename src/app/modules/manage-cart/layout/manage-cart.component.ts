@@ -2,11 +2,11 @@ import { Component, OnInit, TemplateRef, ViewChild, NgZone, ViewEncapsulation } 
 import { ActivatedRoute, Router } from '@angular/router';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { plainToClass } from 'class-transformer';
-import { Observable, combineLatest, of, Subscription, BehaviorSubject } from 'rxjs';
-import { switchMap, take, map } from 'rxjs/operators';
-import { get, filter, isNil, isEqual, set, isNull, forEach, lowerCase, pick } from 'lodash';
+import { Observable, combineLatest, of, Subscription, BehaviorSubject, throwError } from 'rxjs';
+import { switchMap, take, map, catchError } from 'rxjs/operators';
+import { get, filter, find, isNil, isEqual, set, isNull, forEach, lowerCase, pick } from 'lodash';
 import { BsModalRef } from 'ngx-bootstrap/modal/bs-modal-ref.service';
-import { Cart, CartItem, CartService, ConstraintRuleService, ItemGroup, LineItemService, QuoteService, Quote, Order, OrderService, ItemRequest } from '@congarevenuecloud/ecommerce';
+import { Cart, CartItem, CartService, ConstraintRuleService, ItemGroup, LineItemService, QuoteService, Quote, Order, OrderService, ItemRequest, IntegrationService, TaxAddress, AccountService } from '@congarevenuecloud/ecommerce';
 import { BatchActionService, RevalidateCartService, ExceptionService, ButtonAction, BatchSelectionService } from '@congarevenuecloud/elements';
 import { DsrService } from '../../../services/dsr.service';
 
@@ -18,6 +18,7 @@ import { DsrService } from '../../../services/dsr.service';
 })
 
 export class ManageCartComponent implements OnInit {
+  private static lastTaxCalculatedCartId: string = null;
 
   @ViewChild('discardChangesTemplate') discardChangesTemplate: TemplateRef<any>;
   @ViewChild('cloneCartTemplate') cloneCartTemplate: TemplateRef<any>;
@@ -49,6 +50,10 @@ export class ManageCartComponent implements OnInit {
     },
   ]
   showSideNav: boolean = false;
+  isTaxEnabled: boolean = false;
+  taxState: 'idle' | 'calculating' | 'calculating-manual' | 'calculated' | 'stale' = 'idle';
+  businessObjectType: string = 'ProductConfiguration';
+
   constructor(private cartService: CartService,
     private orderService: OrderService,
     private crService: ConstraintRuleService,
@@ -61,7 +66,9 @@ export class ManageCartComponent implements OnInit {
     private modalService: BsModalService,
     private exceptionService: ExceptionService,
     public batchSelectionService: BatchSelectionService,
-    private dsrService: DsrService) { }
+    private dsrService: DsrService,
+    private integrationService: IntegrationService,
+    private accountService: AccountService) { }
 
   ngOnInit() {
     // Check if DSR mode is active to disable breadcrumb navigation and hide actions
@@ -74,6 +81,14 @@ export class ManageCartComponent implements OnInit {
       } else {
         this.batchActionService.showActions([this.batchActionService._saveFavorite]);
       }
+    }));
+
+    this.subscriptions.push(this.integrationService.isTaxIntegrationEnabled().pipe(
+      catchError(() => of(false)),
+      take(1)
+    ).subscribe(isTaxEnabled => {
+      this.isTaxEnabled = isTaxEnabled;
+      this.autoTriggerTaxIfNeeded();
     }));
 
     this.subscriptions.push(combineLatest([
@@ -127,7 +142,18 @@ export class ManageCartComponent implements OnInit {
             })
           } as ManageCartState);
         })
-      ).subscribe(cartState => this.view$.next(cartState)))
+      ).subscribe(cartState => {
+        this.view$.next(cartState);
+        // When the component is recreated after SPA navigation (e.g. catalog → back to cart),
+        // restore taxState to 'stale' if tax was previously calculated for this cart.
+        const cartId = get(cartState, 'cart.Id');
+        if (this.taxState === 'idle' && cartId && get(cartState, 'cart.BusinessObjectId')
+          && ManageCartComponent.lastTaxCalculatedCartId === cartId) {
+          this.taxState = 'stale';
+        }
+        this.autoTriggerTaxIfNeeded();
+        this.trackLineItemChanges(cartState);
+      }))
   }
 
   trackById(index, record): string {
@@ -225,9 +251,112 @@ export class ManageCartComponent implements OnInit {
     this.showSideNav = true;
   }
 
+  dismissTaxWarning() {
+    this.taxState = 'idle';
+  }
+
   /* Set the width of the side navigation to 0 */
   closeNav() {
     this.showSideNav = false;
+  }
+
+  private autoTriggerTaxIfNeeded() {
+    if (this.taxState !== 'idle' || !this.isTaxEnabled) return;
+    const cart = this.view$.value?.cart;
+    if (!get(cart, 'BusinessObjectId')) return;
+    const navState = history.state;
+    if (navState?.autoTax) {
+      history.replaceState({ ...navState, autoTax: false }, '', window.location.href);
+      this.taxState = 'calculating';
+      this.autoCalculateTax();
+    }
+  }
+
+  private trackLineItemChanges(cartState: ManageCartState) {
+    const cart = cartState?.cart;
+    if (!get(cart, 'BusinessObjectId')) return;
+    const hasTaxInSummary = !!find(get(cart, 'SummaryGroups', []), summaryGroup =>
+      (get(summaryGroup, 'ChargeType') ?? '').toLowerCase() === 'sales tax'
+    );
+    if (hasTaxInSummary) {
+      this.taxState = 'calculated';
+    } else if (this.taxState === 'calculated') {
+      this.taxState = 'stale';
+    }
+  }
+
+  calculateTax() {
+    this.taxState = 'calculating-manual';
+    this.subscriptions.push(this.doCalculateTax().subscribe(
+      () => this.onTaxSuccess(),
+      (err) => this.onTaxError(err, { showMissingPostalCodeError: true })
+    ));
+  }
+
+  autoCalculateTax() {
+    this.subscriptions.push(this.doCalculateTax().subscribe(
+      () => this.onTaxSuccess(),
+      (err) => this.onTaxError(err, { showMissingPostalCodeError: false })
+    ));
+  }
+
+  private onTaxSuccess() {
+    this.taxState = 'calculated';
+    ManageCartComponent.lastTaxCalculatedCartId = get(this.view$.value, 'cart.Id') ?? null;
+  }
+
+  private onTaxError(err: any, options: { showMissingPostalCodeError: boolean }) {
+    this.taxState = 'idle';
+    if (get(err, 'missingPostalCode')) {
+      if (options.showMissingPostalCodeError) {
+        this.exceptionService.showError('TAX.ACCOUNT_MISSING_POSTAL_CODE');
+      }
+    } else {
+      this.exceptionService.showError(err);
+    }
+  }
+
+  // Resolves the ship-to account address and calls the tax API, then reprices the cart.
+  private doCalculateTax(): Observable<Cart> {
+    const view = this.view$.value;
+    const businessObject = view?.orderOrQuote;
+    const cart = view?.cart;
+
+    // Resolve ship-to account: prefer cart's ShipToAccount, fall back to
+    // order/quote account fields, then the cart's own Account.
+    const shipToAccountId = get(cart, 'ShipToAccount.Id') || get(businessObject, 'ShipToAccount.Id')
+      || get(businessObject, 'SoldToAccount.Id') || get(businessObject, 'BillToAccount.Id')
+      || get(cart, 'Account.Id');
+
+    if (!shipToAccountId) {
+      this.taxState = 'idle';
+      return of(null);
+    }
+
+    return this.accountService.getAccount(shipToAccountId).pipe(
+      take(1),
+      switchMap((account) => {
+        const postalCode = (get(account, 'ShippingPostalCode', '') || '').toString();
+        if (!postalCode) {
+          return throwError(() => ({ missingPostalCode: true }));
+        }
+        const address: TaxAddress = {
+          Line1: get(account, 'ShippingStreet', ''),
+          Line2: '',
+          City: get(account, 'ShippingCity', ''),
+          Region: get(account, 'ShippingState', ''),
+          Country: get(account, 'ShippingCountry', ''),
+          PostalCode: postalCode
+        };
+        return this.integrationService.calculateTax(cart.Id, this.businessObjectType, address);
+      }),
+      // Reprice the cart after tax is applied so totals reflect the new tax amount.
+      switchMap(() => this.cartService.priceCart())
+    );
+  }
+
+  isTaxState(state: string): boolean {
+    return this.taxState === state;
   }
 
   ngOnDestroy() {
@@ -240,6 +369,7 @@ export class ManageCartComponent implements OnInit {
 export interface ManageCartState {
   cart: Cart;
   lineItems: Array<ItemGroup>;
+  orderOrQuote: Order | Quote;
   productList: Array<ItemRequest>;
   headerInfo: Cart;
 }

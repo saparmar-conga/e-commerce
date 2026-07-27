@@ -1,17 +1,21 @@
 import { Component, OnChanges, Input, TemplateRef, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef  } from '@angular/core';
+import * as _ from 'lodash';
+import { Subscription, combineLatest } from 'rxjs';
+import { take } from 'rxjs/operators';
+import { BsModalService } from 'ngx-bootstrap/modal';
+import { PopoverDirective } from 'ngx-bootstrap/popover';
+import { BsModalRef } from 'ngx-bootstrap/modal/bs-modal-ref.service';
+import { TranslateService } from '@ngx-translate/core';
 import {
   Cart,
   QuoteService,
   CartItem,
   Quote,
   CartItemService,
-  LineItemService
+  LineItemService,
+  IntegrationService,
+  TaxBreakup
 } from '@congarevenuecloud/ecommerce';
-import * as _ from 'lodash';
-import { Subscription, combineLatest } from 'rxjs';
-import { BsModalService } from 'ngx-bootstrap/modal';
-import { BsModalRef } from 'ngx-bootstrap/modal/bs-modal-ref.service';
-import { TranslateService } from '@ngx-translate/core';
 import { ProductConfigurationSummaryComponent } from '@congarevenuecloud/elements';
 
 @Component({
@@ -47,6 +51,12 @@ export class SummaryComponent implements OnChanges, OnDestroy {
   /** @ignore */
   generatedQuoteName: string;
 
+  taxBreakupMap: Map<string, TaxBreakup> = new Map();
+  taxLoadingMap: Map<string, boolean> = new Map();
+  taxErrorMap: Map<string, boolean> = new Map();
+  hasSalesTax: boolean = false;
+  private activeTaxPop: PopoverDirective = null;
+
   lineItems: Array<CartItem>;
   paginatedLineItems: Array<CartItem> = [];
   paginationMinVal: number = 0;
@@ -79,7 +89,8 @@ export class SummaryComponent implements OnChanges, OnDestroy {
               private cartItemService: CartItemService,
               private modalService: BsModalService,
               private translate: TranslateService,
-              private cdr: ChangeDetectorRef) {
+              private cdr: ChangeDetectorRef,
+              private integrationService: IntegrationService) {
     this.state = {
       configurationMessage: null,
       downloadLoading: false,
@@ -106,8 +117,47 @@ export class SummaryComponent implements OnChanges, OnDestroy {
 
   ngOnChanges() {
     this.lineItems = _.map(LineItemService.groupItems(_.get(this, 'cart.LineItems')), i => _.get(i, 'MainLine')) as Array<CartItem>;
+    this.hasSalesTax = this.computeHasSalesTaxSummaryGroup();
+    // Reset per-item tax breakup caches when the cart changes to avoid showing stale data.
+    this.taxBreakupMap.clear();
+    this.taxLoadingMap.clear();
+    this.taxErrorMap.clear();
     this.updatePaginatedItems();
     this.cdr.markForCheck();
+  }
+
+  private computeHasSalesTaxSummaryGroup(): boolean {
+    const summaryGroups = _.get(this.cart, 'SummaryGroups', []);
+    return Array.isArray(summaryGroups) && summaryGroups.some(group =>
+      (_.get(group, 'ChargeType') ?? '').toLowerCase() === 'sales tax'
+    );
+  }
+
+  closeTaxPopover(): void {
+    this.activeTaxPop?.hide();
+  }
+
+  openEstimateTaxPopup(itemId: string, pop?: PopoverDirective): void {
+    if (pop) { this.activeTaxPop = pop; }
+    this.taxLoadingMap.set(itemId, true);
+    this.taxErrorMap.set(itemId, false);
+    this.taxBreakupMap.set(itemId, null);
+    this.cdr.markForCheck();
+
+    this.subscriptions.push(
+      this.integrationService.getLineLevelTax(itemId).pipe(take(1)).subscribe(
+        (item: TaxBreakup) => {
+          this.taxBreakupMap.set(itemId, item);
+          this.taxLoadingMap.set(itemId, false);
+          this.cdr.markForCheck();
+        },
+        () => {
+          this.taxErrorMap.set(itemId, true);
+          this.taxLoadingMap.set(itemId, false);
+          this.cdr.markForCheck();
+        }
+      )
+    );
   }
 
   createQuote() {

@@ -13,11 +13,29 @@
                         <img class="align-self-start mr-3 rounded" [src]="item.Product?.IconId | image"
                             alt="{{ item.Product?.Name }}" width="60" height="60">
                         <div class="flex-fill bg-white">
-                            <!-- Line 1: Product Name (left) | Net Price (right) -->
+                            <!-- Line 1: Product Name (left) | Net Price + Tax icon (right) -->
                             <div class="d-flex justify-content-between align-items-baseline">
                                 <h6 class="mb-0 font-weight-bold">{{ item.Product?.Name }}</h6>
-                                <span class="font-weight-bold text-nowrap ml-2">{{ item?.NetPrice | localCurrency |
-                                    async }}</span>
+                                <span class="d-flex align-items-center text-nowrap ml-2">
+                                  <ng-template #taxPopTemplate>
+                                    <apt-tax-breakup-popover
+                                      [item]="taxBreakupMap.get(item.Id)"
+                                      [loading]="taxLoadingMap.get(item.Id) || false"
+                                      [error]="taxErrorMap.get(item.Id) || false"
+                                      [productName]="item.Product?.Name"
+                                      (closePopover)="closeTaxPopover()">
+                                    </apt-tax-breakup-popover>
+                                  </ng-template>
+                                  <span class="font-weight-bold">{{ item?.NetPrice | localCurrency | async }}</span>
+                                  <button *ngIf="hasSalesTax" type="button"
+                                    [attr.aria-label]="'TAX_BREAKUP.TITLE' | translate"
+                                    class="btn btn-link btn-sm p-0 ml-1"
+                                    #taxPopBtn="bs-popover"
+                                    placement="bottom" container="body" [popover]="taxPopTemplate" [outsideClick]="true"
+                                    (click)="openEstimateTaxPopup(item.Id, taxPopBtn)">
+                                    <i class="fas fa-info-circle text-primary"></i>
+                                  </button>
+                                </span>
                             </div>
                             <!-- Line 2: ID & Quantity (left) | Net Price label (right) -->
                             <div class="d-flex justify-content-between align-items-baseline">
