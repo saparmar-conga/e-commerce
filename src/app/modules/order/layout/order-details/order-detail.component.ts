@@ -154,6 +154,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy, AfterViewChecked
       this.orderLineItems$.next(LineItemService.groupItems(order.OrderLineItems));
       set(this.cartRecord, 'Id', get(get(first(this.orderLineItems$.value), 'MainLine.Configuration'), 'Id'));
       this.cartRecord.BusinessObjectType = 'Order';
+      set(this.cartRecord, 'SalesTaxAmount', get(order, 'SalesTaxAmount'));
       return of(order);
     }), take(1)).subscribe(order => {
       this.updateOrder(order)
@@ -198,7 +199,8 @@ export class OrderDetailComponent implements OnInit, OnDestroy, AfterViewChecked
     this.lineItemLoader = true;
     this.orderService.convertOrderToCart(order).pipe(take(1)).subscribe(value => {
       set(value, 'Order', this.order);
-      this.ngZone.run(() => this.router.navigate(['/carts', 'active']));
+      const hasTax = Number(get(order, 'SalesTaxAmount.Value', get(order, 'SalesTaxAmount'))) > 0;
+      this.ngZone.run(() => this.router.navigate(['/carts', 'active'], { state: { autoTax: hasTax } }));
     },
       err => {
         this.exceptionService.showError(err);

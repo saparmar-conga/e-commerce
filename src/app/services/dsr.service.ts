@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, switchMap, take, tap } from 'rxjs/operators';
 import { get } from 'lodash';
@@ -41,10 +41,29 @@ export class DsrService {
     editedLineItems: false
   });
 
+  // Lazy-loaded services to avoid triggering cartServiceFactory before features are loaded.
+  // The OIDC library navigates (checkSavedRedirectRouteAndNavigate) during checkAuth(),
+  // which resolves DsrRestrictedGuard → DsrService before loadFeatures() completes.
+  // QuoteService → CartItemService → CartService chain must be deferred.
+  private _cartService: CartService;
+  private get cartService(): CartService {
+    if (!this._cartService) {
+      this._cartService = this.injector.get(CartService);
+    }
+    return this._cartService;
+  }
+
+  private _quoteService: QuoteService;
+  private get quoteService(): QuoteService {
+    if (!this._quoteService) {
+      this._quoteService = this.injector.get(QuoteService);
+    }
+    return this._quoteService;
+  }
+
   constructor(
-    private quoteService: QuoteService,
     private priceListService: PriceListService,
-    private cartService: CartService
+    private injector: Injector
   ) {
     // Initialize state from storage on service creation
     this.initializeStateFromStorage();
@@ -101,7 +120,11 @@ export class DsrService {
 
    // Activate DSR mode with a quote
   activateDsrMode(quoteId: string, setPriceList: boolean = true): Observable<DsrSessionState> {
-    return this.quoteService.getQuote(quoteId).pipe(
+    // Wait for pricelist to be available before fetching quote details,
+    // as getQuote() → addProductInfoToLineItems() → /products/details requires a valid pricelist.
+    return this.priceListService.getPriceList().pipe(
+      take(1),
+      switchMap(() => this.quoteService.getQuote(quoteId)),
       take(1),
       map((quote: Quote) => {
         const priceListId = get(quote, 'PriceList.Id');

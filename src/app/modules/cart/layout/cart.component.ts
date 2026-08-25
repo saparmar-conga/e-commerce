@@ -5,10 +5,11 @@ import { Observable, Subscription, combineLatest, of } from 'rxjs';
 import { switchMap, take, catchError, map, shareReplay } from 'rxjs/operators';
 import { BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
 import { BsModalRef } from 'ngx-bootstrap/modal/bs-modal-ref.service';
+import { PopoverDirective } from 'ngx-bootstrap/popover';
 import { get, uniqueId, find, defaultTo, isNil, set, isEmpty } from 'lodash';
 import { TranslateService } from '@ngx-translate/core';
 import { ConfigurationService } from '@congarevenuecloud/core';
-import { User, Account, Cart, CartService, Order, OrderService, Contact, ContactService, UserService, AccountService, EmailService, PaymentTransaction, AccountInfo, EmailTemplate, AttachmentService, IntegrationService, TaxAddress, LocalCurrencyPipe, StorefrontService } from '@congarevenuecloud/ecommerce';
+import { User, Account, Cart, CartService, Order, OrderService, Contact, ContactService, UserService, AccountService, EmailService, PaymentTransaction, AccountInfo, EmailTemplate, AttachmentService, IntegrationService, TaxAddress, LocalCurrencyPipe, StorefrontService, TaxBreakup } from '@congarevenuecloud/ecommerce';
 import { ExceptionService, FileOutput, PaymentIntegrationComponent, PaymentResult, WizardStep } from '@congarevenuecloud/elements';
 
 @Component({
@@ -19,6 +20,11 @@ import { ExceptionService, FileOutput, PaymentIntegrationComponent, PaymentResul
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CartComponent implements OnInit, OnDestroy {
+  // Tracks the last cart ID where tax was calculated — survives component
+  // destruction during SPA navigation (router.navigate to catalog and back).
+  // Single value, never accumulates.
+  private static lastTaxCalculatedCartId: string = null;
+
   @ViewChild('addressTabs') addressTabs: any;
   @ViewChild('addressInfo') addressInfo: ElementRef;
   @ViewChild('confirmationTemplate') confirmationTemplate: TemplateRef<any>;
@@ -51,6 +57,13 @@ export class CartComponent implements OnInit, OnDestroy {
   confirmationPaginationMinVal: number = 0;
   confirmationPaginationMaxVal: number = 0;
   confirmationPaginationTotalVal: number = 0;
+
+  // Tax breakup popover state for the confirmation step.
+  confirmedHasSalesTax: boolean = false;
+  taxBreakupMap: Map<string, TaxBreakup> = new Map();
+  taxLoadingMap: Map<string, boolean> = new Map();
+  taxErrorMap: Map<string, boolean> = new Map();
+  private activeTaxPop: PopoverDirective = null;
   
   /**
    * Map to maintain loading state for all payment type buttons
@@ -309,6 +322,18 @@ export class CartComponent implements OnInit, OnDestroy {
       this.cart = cart;
       this.cdr.detectChanges(); // Immediately render the checkout view on initial load
 
+      // Check if the cart itself currently has tax in SummaryGroups.
+      const cartHasTax = !!find(get(cart, 'SummaryGroups', []), (group: any) =>
+        (get(group, 'ChargeType') ?? '').toLowerCase() === 'sales tax'
+      );
+
+      // Restore from static property: tax was calculated in a prior component lifecycle
+      // (before navigating to catalog and back via forward navigation).
+      const cartId = get(cart, 'Id');
+      if (cartHasTax || (cartId && CartComponent.lastTaxCalculatedCartId === cartId)) {
+        this.taxCalculated = true;
+      }
+
       // Navigate to manage cart if cart is empty
       if (isEmpty(get(cart, 'LineItems'))) {
         this.ngZone.run(() => {
@@ -411,6 +436,9 @@ export class CartComponent implements OnInit, OnDestroy {
   onTaxStatusChange(status: { calculated: boolean, enabled: boolean, amount: number }): void {
     this.taxCalculated = status.calculated;
     this.taxCalculationEnabled = status.enabled;
+    if (status.calculated && this.cart?.Id) {
+      CartComponent.lastTaxCalculatedCartId = this.cart.Id;
+    }
   }
 
   // Handle preview order button click - navigate to review step
@@ -771,6 +799,14 @@ export class CartComponent implements OnInit, OnDestroy {
       this.confirmedCart = this.cart; // Store cart reference for apt-price-summary
       this.confirmedCartItems = [...(this.cart.LineItems || [])];
       this.confirmedCartSummary = [...(this.cart.SummaryGroups || [])];
+      // Determine whether a Sales Tax summary group exists so the confirmation step can show the tax icon.
+      this.confirmedHasSalesTax = this.confirmedCartSummary.some(group =>
+        (get(group, 'ChargeType') ?? '').toLowerCase() === 'sales tax'
+      );
+      // Reset per-item tax breakup caches for the confirmed cart.
+      this.taxBreakupMap.clear();
+      this.taxLoadingMap.clear();
+      this.taxErrorMap.clear();
       this.updateConfirmedProductItems();
     }
 
@@ -1140,6 +1176,33 @@ export class CartComponent implements OnInit, OnDestroy {
         step.clickable = false;
       }
     });
+  }
+
+  closeTaxPopover(): void {
+    this.activeTaxPop?.hide();
+  }
+
+  openEstimateTaxPopup(itemId: string, pop?: PopoverDirective): void {
+    if (pop) { this.activeTaxPop = pop; }
+    this.taxLoadingMap.set(itemId, true);
+    this.taxErrorMap.set(itemId, false);
+    this.taxBreakupMap.set(itemId, null);
+    this.cdr.markForCheck();
+
+    this.subscriptions.push(
+      this.integrationService.getLineLevelTax(itemId).pipe(take(1)).subscribe(
+        (item: TaxBreakup) => {
+          this.taxBreakupMap.set(itemId, item);
+          this.taxLoadingMap.set(itemId, false);
+          this.cdr.markForCheck();
+        },
+        () => {
+          this.taxErrorMap.set(itemId, true);
+          this.taxLoadingMap.set(itemId, false);
+          this.cdr.markForCheck();
+        }
+      )
+    );
   }
 
   // Filter confirmed cart items to primary product line items only

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PopoverModule as BSPopoverModule } from 'ngx-bootstrap/popover';
 import { CartRoutingModule } from './cart-routing.module';
 import { CartComponent } from './layout/cart.component';
 import { SecureCheckoutComponent } from './layout/secure-checkout/secure-checkout.component';
@@ -19,7 +20,8 @@ import {
   CaptchaModule,
   FileUploaderModule,
   PaymentIntegrationModule,
-  WizardModule
+  WizardModule,
+  TaxBreakupModule
 } from '@congarevenuecloud/elements';
 
 import { ComponentModule } from '../../components/component.module';
@@ -59,6 +61,8 @@ import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
     PricingModule,
     FileUploaderModule,
     WizardModule,
+    TaxBreakupModule,
+    BSPopoverModule.forRoot(),
     PaginationModule.forRoot()
   ],
   declarations: [CartComponent, SecureCheckoutComponent, SummaryComponent],
