@@ -1,2 +1,4 @@
 <router-outlet></router-outlet>
-<apt-product-drawer *ngIf="showDrawer$ | async"></apt-product-drawer>
+@if (showDrawer$ | async) {
+  <apt-product-drawer></apt-product-drawer>
+}

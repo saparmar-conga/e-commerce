@@ -1,4 +1,4 @@
-<div class="container-fluid py-4">
+﻿<div class="container-fluid py-4">
   <div class="row justify-content-center">
     <div class="col-12 col-xl-10">
       <!-- Header -->
@@ -28,24 +28,32 @@
             </div>
             <div class="card-body text-muted">
               <!-- For logged-in users -->
-              <ng-container *ngIf="isLoggedIn">
-                <div *ngIf="order?.ShipToAccount">
-                  <p class="mb-2 font-weight-bold text-dark">{{ order.ShipToAccount.Name }}</p>
+              @if (isLoggedIn) {
+                @if (order?.ShipToAccount) {
+                <div>
+                  <p class="mb-2 fw-bold text-dark">{{ order.ShipToAccount.Name }}</p>
                   <address class="mb-0">
-                    <span *ngIf="order.ShipToAccount.ShippingStreet">{{ order.ShipToAccount.ShippingStreet }}<br></span>
-                    <span *ngIf="order.ShipToAccount.ShippingCity || order.ShipToAccount.ShippingState || order.ShipToAccount.ShippingPostalCode">
-                      {{ order.ShipToAccount.ShippingCity }}<ng-container *ngIf="order.ShipToAccount.ShippingCity && (order.ShipToAccount.ShippingState || order.ShipToAccount.ShippingPostalCode)">, </ng-container>
+                    @if (order.ShipToAccount.ShippingStreet) {
+                    <span>{{ order.ShipToAccount.ShippingStreet }}<br></span>
+                    }
+                    @if (order.ShipToAccount.ShippingCity || order.ShipToAccount.ShippingState || order.ShipToAccount.ShippingPostalCode) {
+                    <span>
+                      {{ order.ShipToAccount.ShippingCity }}@if (order.ShipToAccount.ShippingCity && (order.ShipToAccount.ShippingState || order.ShipToAccount.ShippingPostalCode)) {<ng-container>, </ng-container>}
                       {{ order.ShipToAccount.ShippingState }} {{ order.ShipToAccount.ShippingPostalCode }}<br>
                     </span>
-                    <span *ngIf="order.ShipToAccount.ShippingCountry">{{ order.ShipToAccount.ShippingCountry }}</span>
+                    }
+                    @if (order.ShipToAccount.ShippingCountry) {
+                    <span>{{ order.ShipToAccount.ShippingCountry }}</span>
+                    }
                   </address>
                 </div>
-              </ng-container>
+                }
+              }
               <!-- For guest users -->
-              <ng-container *ngIf="!isLoggedIn && primaryContact">
+              @if (!isLoggedIn && primaryContact) {
                 <apt-address [value]="primaryContact" [type]="primaryContact?.OtherStreet ? 'Shipping' : 'Billing'" [readonly]="true"
                   [showLabel]="false"></apt-address>
-              </ng-container>
+              }
             </div>
           </div>
 
@@ -57,8 +65,9 @@
             <div class="card-body">
 
               <!-- For logged-in users: Show Primary Contact -->
-              <ng-container *ngIf="isLoggedIn">
-                <div *ngIf="order?.PrimaryContact">
+              @if (isLoggedIn) {
+                @if (order?.PrimaryContact) {
+                <div>
                   <div class="mb-2">
                     <small class="text-muted">{{ 'COMMON.NAME' | translate }}</small>
                     <div>{{ order.PrimaryContact?.Name }}</div>
@@ -68,9 +77,10 @@
                     <div>{{ order.PrimaryContact?.Email }}</div>
                   </div>
                 </div>
-              </ng-container>
+                }
+              }
               <!-- For guest users: Show Primary Contact Details -->
-              <ng-container *ngIf="!isLoggedIn && primaryContact">
+              @if (!isLoggedIn && primaryContact) {
                 <div class="mb-2">
                   <small class="text-muted">{{ 'COMMON.NAME' | translate }}</small>
                   <div>{{ primaryContact.FirstName }} {{ primaryContact.LastName }}</div>
@@ -79,7 +89,7 @@
                   <small class="text-muted">{{ 'COMMON.EMAIL_ADDRESS' | translate }}</small>
                   <div>{{ primaryContact.Email }}</div>
                 </div>
-              </ng-container>
+              }
             </div>
           </div>
         </div>
@@ -90,13 +100,12 @@
 
 <!-- Success Modal Template -->
 <ng-template #confirmationTemplate>
-  <div class="modal-header align-items-center d-flex flex-row-reverse p-0 pb-2 mt-3 border-bottom border-secondary">
-    <button type="button" class="close close-button pull-right pr-3" aria-label="Close" (click)="handleCloseSuccess()">
-      <span aria-hidden="true">&times;</span>
+  <div class="modal-header border-0 p-0">
+    <button type="button" class="btn-close btn-close-white close-button float-end pe-3" aria-label="Close" (click)="handleCloseSuccess()">
     </button>
   </div>
   <div class="modal-body bg-white d-flex flex-column justify-content-center py-4">
-    <h6 class="modal-title pull-left font-weight-bold pb-2">
+    <h6 class="modal-title float-start fw-bold pb-2">
       {{ "MANAGE_CART.CART_SUMMARY.CHECKOUT" | translate }}
     </h6>
     <p class="text-center">
@@ -104,12 +113,18 @@
     </p>
 
     <!-- Success message with proper translation -->
-    <div class="text-center" *ngIf="orderConfirmation?.PrimaryContact?.Email; else noEmail">
+    @if (orderConfirmation?.PrimaryContact?.Email) {
+    <div class="text-center">
       <small>{{
         "CART.SUCCESSFUL_ORDER_CREATION_MESSAGE"
         | translate: { emailAddress: orderConfirmation?.PrimaryContact?.Email }
         }}</small>
     </div>
+    } @else {
+    <small class="text-center">{{
+      "CART.SUCCESSFUL_ORDER_CREATION_MESSAGE_WITHOUT_EMAIL" | translate
+      }}</small>
+    }
 
     <h5 class="text-center my-3" [translate]="'DETAILS.GENERATED_ORDER_NUMBER'"
       [translateParams]="{ orderName: orderConfirmation?.Name }"></h5>
@@ -119,10 +134,4 @@
       </button>
     </div>
   </div>
-</ng-template>
-
-<ng-template #noEmail>
-  <small class="text-center">{{
-    "CART.SUCCESSFUL_ORDER_CREATION_MESSAGE_WITHOUT_EMAIL" | translate
-    }}</small>
 </ng-template>

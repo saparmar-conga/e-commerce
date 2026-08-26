@@ -1,20 +1,21 @@
-import { Component, OnInit, TemplateRef, ViewChild, NgZone, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild, NgZone, ViewEncapsulation, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { plainToClass } from 'class-transformer';
 import { Observable, combineLatest, of, Subscription, BehaviorSubject, throwError } from 'rxjs';
 import { switchMap, take, map, catchError } from 'rxjs/operators';
 import { get, filter, find, isNil, isEqual, set, isNull, forEach, lowerCase, pick } from 'lodash';
-import { BsModalRef } from 'ngx-bootstrap/modal/bs-modal-ref.service';
+import { BsModalRef } from 'ngx-bootstrap/modal';
 import { Cart, CartItem, CartService, ConstraintRuleService, ItemGroup, LineItemService, QuoteService, Quote, Order, OrderService, ItemRequest, IntegrationService, TaxAddress, AccountService } from '@congarevenuecloud/ecommerce';
 import { BatchActionService, RevalidateCartService, ExceptionService, ButtonAction, BatchSelectionService } from '@congarevenuecloud/elements';
 import { DsrService } from '../../../services/dsr.service';
 
 @Component({
-  selector: 'app-manage-cart',
-  templateUrl: './manage-cart.component.html',
-  styleUrls: ['./manage-cart.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-manage-cart',
+    templateUrl: './manage-cart.component.html',
+    styleUrls: ['./manage-cart.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 
 export class ManageCartComponent implements OnInit {
@@ -68,7 +69,8 @@ export class ManageCartComponent implements OnInit {
     public batchSelectionService: BatchSelectionService,
     private dsrService: DsrService,
     private integrationService: IntegrationService,
-    private accountService: AccountService) { }
+    private accountService: AccountService,
+    private cdr: ChangeDetectorRef) { }
 
   ngOnInit() {
     // Check if DSR mode is active to disable breadcrumb navigation and hide actions
@@ -224,10 +226,12 @@ export class ManageCartComponent implements OnInit {
         this.loading = false;
         this.modalRef.hide();
         this.exceptionService.showSuccess('SUCCESS.CART.CLONE_CART_SUCCESS');
+        this.cdr.detectChanges();
       },
       err => {
         this.loading = false;
         this.exceptionService.showError('MY_ACCOUNT.CART_LIST.CART_CREATION_FAILED');
+        this.cdr.detectChanges();
       }
     );
   }

@@ -1,4 +1,6 @@
-<apt-breadcrumb *ngIf="!hideLink" [sobject]="context" [label]="title" [route]="route" [hideHome]="hideHome" [readOnly]="readOnly" class="border-bottom"></apt-breadcrumb>
+@if (!hideLink) {
+<apt-breadcrumb [sobject]="context" [label]="title" [route]="route" [hideHome]="hideHome" [readOnly]="readOnly" class="border-bottom"></apt-breadcrumb>
+}
 <ng-content select=".constraintAlerts"></ng-content>
 <div>
   <div class="headerContainer" #headerNav>
@@ -6,47 +8,60 @@
       <div class="d-flex border-bottom px-2 pb-2">
         <div
           class="flex-grow-1 px-2 justify-content-center d-flex flex-column w-100">
-          <h3 [innerHTML]="title" *ngIf="title" class="overflow-hidden "></h3>
-          <span [innerHTML]="subtitle" *ngIf="subtitle" class="pb-lg-0 pb-md-0 pb-sm-2 pb-2"></span>
+          @if (title) {
+          <h3 [innerHTML]="title" class="overflow-hidden "></h3>
+          }
+          @if (subtitle) {
+          <span [innerHTML]="subtitle" class="pb-lg-0 pb-md-0 pb-sm-2 pb-2"></span>
+          }
           <ng-content select=".detail-header"></ng-content>
         </div>
-        <div class="ml-auto py-2 actions primary-actions d-lg-block d-md-block d-sm-none d-none">
+        <div class="ms-auto py-2 actions primary-actions d-lg-block d-md-block d-sm-none d-none">
           <div class="d-flex align-items-center h-100" #primaryActions [hidden]="hidePrimaryActions">
             <ng-content select=".primary-actions"></ng-content>
           </div>
         </div>
       </div>
 
-      <div class="d-flex align-items-end px-3" *ngIf="filteredSections.length > 0">
-        <div *ngFor="let tab of filteredSections; let i = index;">
+      @if (filteredSections.length > 0) {
+      <div class="d-flex align-items-end px-3">
+        @for (tab of filteredSections; track tab.title ?? $index) {
+        <div>
+          @if (tab?.element?.nativeElement?.offsetTop >= 0 && !tab.hideLink) {
           <a class="nav-link text-capitalize border-0 mb-0" [class.active]="tab.active" href="javascript:void(0)"
-            *ngIf="tab?.element?.nativeElement?.offsetTop >= 0 && !tab.hideLink" [class.d-none]="i > 2"
-            [class.d-md-block]="i === 2" [class.d-lg-block]="i === 3" [class.d-xl-block]="i === 4"
+            [class.d-none]="$index > 2"
+            [class.d-md-block]="$index === 2" [class.d-lg-block]="$index === 3" [class.d-xl-block]="$index === 4"
             (click)="scrollTo(tab)">
             {{tab.title}}
           </a>
+          }
         </div>
+        }
         <div dropdown class="position-relative" [ngClass]="getVisibleSections().length > 3 ? 'd-block': 'd-none'"
           [class.d-xl-none]="getVisibleSections()?.length < 6" [class.d-lg-none]="getVisibleSections()?.length < 5"
           [class.d-md-none]="getVisibleSections()?.length < 4">
           <a class="nav-link dropdown-toggle border-0 mb-0" dropdownToggle href="javascript:void(0)"><i
               class="fa fa-ellipsis-v"></i></a>
           <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu" role="menu" aria-labelledby="button-basic">
-            <li role="menuitem" *ngFor="let tab of filteredSections; let i = index" class="d-none"
-              [class.d-block]="i > 2" [class.d-xl-none]="i < 5" [class.d-lg-none]="i < 4" [class.d-md-none]="i < 3">
-              <a class="dropdown-item" [class.active]="tab.active" href="javascript:void(0)" (click)="scrollTo(tab)"
-                *ngIf="!tab.hideLink">{{
-                tab.title }}</a>
+            @for (tab of filteredSections; track tab.title ?? $index) {
+            <li role="menuitem"
+              [class.d-none]="$index <= 2"
+              [class.d-xl-none]="$index < 5" [class.d-lg-none]="$index < 4" [class.d-md-none]="$index < 3">
+              @if (!tab.hideLink) {
+              <a class="dropdown-item" [class.active]="tab.active" href="javascript:void(0)" (click)="scrollTo(tab)">{{ tab.title }}</a>
+              }
             </li>
+            }
           </ul>
         </div>
 
-        <div class="ml-auto actions secondary-actions d-lg-block d-md-block d-sm-none d-none py-2 pl-2">
-          <div class="d-flex align-items-center pl-4 h-100" #secondaryActions [hidden]="hideSecondaryActions">
+        <div class="ms-auto actions secondary-actions d-lg-block d-md-block d-sm-none d-none py-2 ps-2">
+          <div class="d-flex align-items-center ps-4 h-100" #secondaryActions [hidden]="hideSecondaryActions">
             <ng-content select=".secondary-actions"></ng-content>
           </div>
         </div>
       </div>
+      }
     </nav>
   </div>
   <div class="container-fluid">

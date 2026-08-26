@@ -1,13 +1,14 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { BehaviorSubject, Observable, of, Subscription, combineLatest } from 'rxjs';
 import { map, take, switchMap } from 'rxjs/operators';
 import { first, get, forEach, isNil } from 'lodash';
 import { Product, CategoryService, ProductService, Category, UserService, ItemRequest, GuestUserService } from '@congarevenuecloud/ecommerce';
 
 @Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+    selector: 'app-home',
+    templateUrl: './home.component.html',
+    styleUrls: ['./home.component.scss'],
+    standalone: false
 })
 export class HomeComponent implements OnInit, OnDestroy {
 
@@ -26,7 +27,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   productsLoading: boolean = false;
 
   constructor(private userService: UserService, private guestUserService: GuestUserService,
-    private categoryService: CategoryService, private productService: ProductService) {
+    private categoryService: CategoryService, private productService: ProductService,
+    private cdr: ChangeDetectorRef) {
   }
 
   ngOnInit() {
@@ -64,6 +66,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             } else {
               this.hasProducts = false;
               this.productsLoading = false;
+              this.cdr.detectChanges();
               return of([[], []]);
             }
           }),
@@ -74,6 +77,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             this.hasProducts = (productsA && productsA.length > 0) || (productsB && productsB.length > 0);
             this.productsLoading = false;
           }
+          this.cdr.detectChanges();
         })
     );
   }

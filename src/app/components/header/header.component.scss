@@ -41,6 +41,14 @@
   width: 20rem;
   .modal-content {
     height: 100vh;
+    background-color: $white !important;
+    ng-scrollbar {
+      flex: 1;
+      min-height: 0;
+    }
+  }
+  .list-group-item-action {
+    color: $gray-900;
   }
 }
 

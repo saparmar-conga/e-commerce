@@ -11,7 +11,8 @@
         <h5 class="card-title d-flex justify-content-between">
           <span>{{'MY_ACCOUNT.SETTING.USER_INFO' | translate}}</span>
         </h5>
-        <dl class="mt-4" *ngIf="user$ | async as user; else loading">
+        @if (user$ | async; as user) {
+        <dl class="mt-4">
           <dd>
             <apt-output-field [record]="user" field="FirstName" [layout]="'stacked'"  (onChange)="updateUser($event)">
             </apt-output-field>
@@ -38,6 +39,9 @@
           </dd>
 
         </dl>
+        } @else {
+        <ng-container *ngTemplateOutlet="loading"></ng-container>
+        }
       </div>
     </div>
   </div>
@@ -45,21 +49,25 @@
     <div class="card h-100">
       <div class="card-body">
         <h5 class="card-title mb-3">{{'MY_ACCOUNT.SETTING.ACCOUNT_INFO' | translate}}</h5>
-        <dl class="mt-4" *ngIf="account$ | async as account; else loading">
+        @if (account$ | async; as account) {
+        <dl class="mt-4">
           <dd>
-            <apt-output-field [record]="account" field="Name" [layout]="'stacked'" [labelClass]="'font-weight-light'" [editable]="false"></apt-output-field>
+            <apt-output-field [record]="account" field="Name" [layout]="'stacked'" [labelClass]="'fw-light'" [editable]="false"></apt-output-field>
           </dd>
 
           <dd class="pb-2">
-            <apt-address [value]="account" [type]="'Shipping'" [readonly]="true" [layout]="'stacked'" [labelClass]="'font-weight-light'"
+            <apt-address [value]="account" [type]="'Shipping'" [readonly]="true" [layout]="'stacked'" [labelClass]="'fw-light'"
               [label]="'COMMON.SHIPPING_ADDRESS' | translate"></apt-address>
           </dd>
 
           <dd>
-            <apt-output-field [record]="account" field="Phone" [layout]="'stacked'" [labelClass]="'font-weight-light'" [editable]="false">
+            <apt-output-field [record]="account" field="Phone" [layout]="'stacked'" [labelClass]="'fw-light'" [editable]="false">
             </apt-output-field>
           </dd>
         </dl>
+        } @else {
+        <ng-container *ngTemplateOutlet="loading"></ng-container>
+        }
       </div>
     </div>
   </div>

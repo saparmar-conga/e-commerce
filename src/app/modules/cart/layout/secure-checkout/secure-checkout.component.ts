@@ -26,9 +26,10 @@ import { PaymentIntegrationComponent, PaymentResult, ExceptionService } from '@c
 
 // Secure Checkout Component with Stripe Payment Integration for Ecommerce
 @Component({
-  selector: 'app-secure-checkout',
-  templateUrl: './secure-checkout.component.html',
-  styleUrls: ['./secure-checkout.component.scss'],
+    selector: 'app-secure-checkout',
+    templateUrl: './secure-checkout.component.html',
+    styleUrls: ['./secure-checkout.component.scss'],
+    standalone: false
 })
 export class SecureCheckoutComponent implements OnInit, OnDestroy {
   @ViewChild('paymentElement') paymentElement: PaymentIntegrationComponent;

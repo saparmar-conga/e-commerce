@@ -1,22 +1,21 @@
-<div class="card animated fadeIn">
+﻿<div class="card animated fadeIn">
     <div class="card-header border-bottom py-2">
         <h5 class="card-title m-0">{{ 'CART.CART_SUMMARY.YOUR_CART' | translate }}</h5>
     </div>
 
     <div class="card-body">
         <div style="list-style-type: none;">
-            <ng-container *ngFor="let item of paginatedLineItems; let i = index; let isLast = last">
-                <ng-container
-                    *ngIf="item.LineType === 'Product/Service' && !item.ParentBundleNumber && !item.IsOptionRollupLine && item.IsPrimaryLine">
-                    <div class="mb-3 d-flex">
+            @for (item of paginatedLineItems; track item.Id; let isLast = $last) {
+                @if (item.LineType === 'Product/Service' && !item.ParentBundleNumber && !item.IsOptionRollupLine && item.IsPrimaryLine) {
+                <div class="mb-3 d-flex">
                         <!-- Product Image -->
-                        <img class="align-self-start mr-3 rounded" [src]="item.Product?.IconId | image"
+                        <img class="align-self-start me-3 rounded" [src]="item.Product?.IconId | image"
                             alt="{{ item.Product?.Name }}" width="60" height="60">
                         <div class="flex-fill bg-white">
                             <!-- Line 1: Product Name (left) | Net Price + Tax icon (right) -->
                             <div class="d-flex justify-content-between align-items-baseline">
-                                <h6 class="mb-0 font-weight-bold">{{ item.Product?.Name }}</h6>
-                                <span class="d-flex align-items-center text-nowrap ml-2">
+                                <h6 class="mb-0 fw-bold">{{ item.Product?.Name }}</h6>
+                                <span class="d-flex align-items-center text-nowrap ms-2">
                                   <ng-template #taxPopTemplate>
                                     <apt-tax-breakup-popover
                                       [item]="taxBreakupMap.get(item.Id)"
@@ -26,70 +25,86 @@
                                       (closePopover)="closeTaxPopover()">
                                     </apt-tax-breakup-popover>
                                   </ng-template>
-                                  <span class="font-weight-bold">{{ item?.NetPrice | localCurrency | async }}</span>
-                                  <button *ngIf="hasSalesTax" type="button"
+                                  <span class="fw-bold">{{ item?.NetPrice | localCurrency | async }}</span>
+                                  @if (hasSalesTax) {
+                                  <button type="button"
                                     [attr.aria-label]="'TAX_BREAKUP.TITLE' | translate"
-                                    class="btn btn-link btn-sm p-0 ml-1"
+                                    class="btn btn-link btn-sm p-0 ms-1"
                                     #taxPopBtn="bs-popover"
                                     placement="bottom" container="body" [popover]="taxPopTemplate" [outsideClick]="true"
                                     (click)="openEstimateTaxPopup(item.Id, taxPopBtn)">
                                     <i class="fas fa-info-circle text-primary"></i>
                                   </button>
+                                  }
                                 </span>
                             </div>
                             <!-- Line 2: ID & Quantity (left) | Net Price label (right) -->
                             <div class="d-flex justify-content-between align-items-baseline">
                                 <div
                                     class="text-muted small inline-fields d-flex flex-column flex-lg-row flex-wrap align-items-lg-baseline">
-                                    <apt-output-field *ngIf="item?.Product?.ProductCode" [record]="item?.Product"
+                                    @if (item?.Product?.ProductCode) {
+                                    <apt-output-field [record]="item?.Product"
                                         field="ProductCode" [label]="'COMMON.ID' | translate" layout="inline"
                                         [editable]="false"></apt-output-field>
-                                    <apt-output-field class="ml-lg-3" [record]="item" field="Quantity" layout="inline"
+                                    }
+                                    <apt-output-field class="ms-lg-3" [record]="item" field="Quantity" layout="inline"
                                         [editable]="false"></apt-output-field>
-                                    <apt-output-field *ngIf="item?.PriceUom" class="d-none d-md-inline-flex ml-lg-3"
+                                    @if (item?.PriceUom) {
+                                    <apt-output-field class="d-none d-md-inline-flex ms-lg-3"
                                         [record]="item" field="PriceUom" layout="inline"
                                         [editable]="false"></apt-output-field>
-                                    <apt-output-field *ngIf="item?.ChargeType" class="d-none d-md-inline-flex ml-lg-3"
+                                    }
+                                    @if (item?.ChargeType) {
+                                    <apt-output-field class="d-none d-md-inline-flex ms-lg-3"
                                         [record]="item" field="ChargeType" layout="inline"
                                         [editable]="false"></apt-output-field>
-                                    <span class="text-success ml-lg-3"
-                                        *ngIf="item?.IncentiveAdjustmentAmount && item?.IncentiveAdjustmentAmount < 0">
+                                    }
+                                    @if (item?.IncentiveAdjustmentAmount && item?.IncentiveAdjustmentAmount < 0) {
+                                    <span class="text-success ms-lg-3">
                                         {{ 'PROMOTION.PROMOTIONS' | translate }}: {{item.IncentiveAdjustmentAmount | localCurrency
                                         | async}}
                                     </span>
+                                    }
                                 </div>
-                                <small class="text-muted text-nowrap ml-2">{{ 'COMMON.NET_PRICE' | translate }}</small>
+                                <small class="text-muted text-nowrap ms-2">{{ 'COMMON.NET_PRICE' | translate }}</small>
                             </div>
                             <!-- Line 3: Details Link -->
-                            <small *ngIf="item.Product?.HasAttributes || item.Product?.HasOptions">
+                            @if (item.Product?.HasAttributes || item.Product?.HasOptions) {
+                            <small>
                                 <a href="javascript:void(0)" (click)="openModal(item)">{{ 'CART.CART_SUMMARY.DETAILS' |
                                     translate }}</a>
                             </small>
+                            }
                         </div>
                     </div>
-                    <hr class="my-2" *ngIf="!isLast" />
-                </ng-container>
-            </ng-container>
+                    @if (!isLast) {
+                    <hr class="my-2" />
+                    }
+                }
+            }
         </div>
     </div>
 </div>
 
 <!-- Pagination Controls -->
-<div *ngIf="lineItems && paginationTotalVal > itemsPerPage" class="d-flex justify-content-between align-items-center mt-3">
+@if (lineItems && paginationTotalVal > itemsPerPage) {
+<div class="d-flex justify-content-between align-items-center mt-3">
     <div class="d-flex align-items-center">
-        <div class="text-muted small mr-3">
+        <div class="text-muted small me-3">
             {{ 'PRODUCT_LIST.SHOW_COUNT_OF_RECORDS_MESSAGE' | translate: {minVal: paginationMinVal, maxVal: paginationMaxVal, totalVal: paginationTotalVal} }}
         </div>
         <div class="d-none d-sm-none d-md-flex align-items-center">
-            <label class="mb-0 mr-2 text-muted small">{{ 'PRODUCT_LIST.SHOW' | translate }}</label>
+            <label class="mb-0 me-2 text-muted small">{{ 'PRODUCT_LIST.SHOW' | translate }}</label>
             <select class="form-control form-control-sm" style="width: auto;" 
                     [value]="itemsPerPage" 
                     (change)="onItemsPerPageChange($event.target.value)">
-                <option *ngFor="let option of itemsPerPageOptions" [value]="option">{{ option }}</option>
+                @for (option of itemsPerPageOptions; track option) {
+                <option [value]="option">{{ option }}</option>
+                }
             </select>
         </div>
     </div>
-    <div *ngIf="paginationTotalVal > itemsPerPage">
+    @if (paginationTotalVal > itemsPerPage) {
         <!-- Large/Medium screens: show maxSize 5 -->
         <div class="d-none d-md-block">
             <pagination (pageChanged)="onPageChange($event)" [totalItems]="paginationTotalVal" 
@@ -106,8 +121,9 @@
                 [responsive]="true" [nextText]="paginationButtonLabels.next" [lastText]="paginationButtonLabels.last">
             </pagination>
         </div>
-    </div>
+    }
 </div>
+}
 
 <!-- <h4 class=" mb-3 mt-5">
     <span class="text-muted">Configuration Summary</span>
@@ -119,8 +135,8 @@
             to your device.
         </small>
         <small class="text-info">{{state.configurationMessage}}</small>
-        <button class="btn btn-block btn-outline-primary" (click)="generatePdf()" [ladda]="state.downloadLoading" data-style="zoom-in" data-spinner-color="black">Download</button>
-        <button class="btn btn-block btn-outline-primary">Send as Email</button>
+        <button class="btn w-100 btn-outline-primary" (click)="generatePdf()" [ladda]="state.downloadLoading" data-style="zoom-in" data-spinner-color="black">Download</button>
+        <button class="btn w-100 btn-outline-primary">Send as Email</button>
     </div>
 </div> -->
 
@@ -132,15 +148,14 @@
         <small class="mb-3 d-block">
              Request a quote for your configuration and someone will be in touch to discuss next steps.
         </small>
-        <button class="btn btn-block btn-outline-primary" [ladda]="state.requestQuoteLoading" data-style="zoom-in" (click)="createQuote()" data-spinner-color="black">Request a Quote</button>
+        <button class="btn w-100 btn-outline-primary" [ladda]="state.requestQuoteLoading" data-style="zoom-in" (click)="createQuote()" data-spinner-color="black">Request a Quote</button>
     </div>
 </div> -->
 
 <!--<ng-template #productDetails>
     <div class="modal-header">
-        <h4 class="modal-title pull-left">{{lineItem?.Product.Name}}</h4>
-        <button type="button" class="close pull-right" aria-label="Close" (click)="modalRef.hide()">
-            <span aria-hidden="true">&times;</span>
+        <h4 class="modal-title float-start">{{lineItem?.Product.Name}}</h4>
+        <button type="button" class="btn-close float-end" aria-label="Close" (click)="modalRef.hide()">
         </button>
     </div>
     <div class="modal-body">
@@ -149,14 +164,15 @@
     </div>
 </ng-template>-->
 
-<apt-product-configuration-summary *ngIf="lineItem" [product]="lineItem.Product" [relatedTo]="lineItem">
+@if (lineItem) {
+<apt-product-configuration-summary [product]="lineItem.Product" [relatedTo]="lineItem">
 </apt-product-configuration-summary>
+}
 
 <ng-template #confirmationTemplate>
     <div class="modal-header">
-        <h4 class="modal-title pull-left"> {{generatedQuoteName}} </h4>
-        <button type="button" class="close pull-right" aria-label="Close" (click)="confirmationModal.hide()">
-            <span aria-hidden="true">&times;</span>
+        <h4 class="modal-title float-start"> {{generatedQuoteName}} </h4>
+        <button type="button" class="btn-close float-end" aria-label="Close" (click)="confirmationModal.hide()">
         </button>
     </div>
     <div class="modal-body d-flex justify-content-center align-items-center confirmation py-5">

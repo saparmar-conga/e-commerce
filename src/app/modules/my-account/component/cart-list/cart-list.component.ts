@@ -1,7 +1,7 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { TranslateService } from '@ngx-translate/core';
-import { BsModalRef } from 'ngx-bootstrap/modal/bs-modal-ref.service';
+import { BsModalRef } from 'ngx-bootstrap/modal';
 import { Observable, of, Subscription } from 'rxjs';
 import { catchError, map, take } from 'rxjs/operators';
 import { ClassType } from 'class-transformer/ClassTransformer';
@@ -11,9 +11,10 @@ import { CartService, Cart, PriceService, CartResult, FieldFilter, SummaryGroup,
 import { TableOptions, TableAction, ExceptionService } from '@congarevenuecloud/elements';
 
 @Component({
-  selector: 'app-cart-list',
-  templateUrl: './cart-list.component.html',
-  styleUrls: ['./cart-list.component.scss']
+    selector: 'app-cart-list',
+    templateUrl: './cart-list.component.html',
+    styleUrls: ['./cart-list.component.scss'],
+    standalone: false
 })
 export class CartListComponent implements OnInit {
   type = Cart;

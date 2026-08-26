@@ -2,8 +2,8 @@ import { Component, OnInit, ChangeDetectionStrategy, Input } from '@angular/core
 import { Product } from '@congarevenuecloud/ecommerce';
 
 @Component({
-  selector: 'app-tab-features',
-  template: `
+    selector: 'app-tab-features',
+    template: `
     <table class="table table-sm">
       <thead>
         <tr>
@@ -13,20 +13,23 @@ import { Product } from '@congarevenuecloud/ecommerce';
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let feature of product?.ProductFeatureValues; let i = index">
+        @for (feature of product?.ProductFeatureValues ?? []; track feature; let i = $index) {
+        <tr>
           <th scope="row">{{i + 1}}</th>
           <td>{{feature.Feature.Name}}</td>
           <td>{{feature.Value}}</td>
         </tr>
+        }
       </tbody>
     </table>
   `,
-  styles: [`
+    styles: [`
     :host{
       font-size: smaller;
     }
   `],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 /**
  * Tab Features Component displays the list of specifications for the product.

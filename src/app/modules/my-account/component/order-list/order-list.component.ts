@@ -6,9 +6,10 @@ import { Operator, FilterOperator, PlatformConstants } from '@congarevenuecloud/
 import { OrderService, Order, AccountService, FieldFilter, DateFormatPipe, GroupByAggregateResponse, AggregateFields } from '@congarevenuecloud/ecommerce';
 import { TableOptions, FilterOptions, ExceptionService } from '@congarevenuecloud/elements';
 @Component({
-  selector: 'app-order-list',
-  templateUrl: './order-list.component.html',
-  styleUrls: ['./order-list.component.scss']
+    selector: 'app-order-list',
+    templateUrl: './order-list.component.html',
+    styleUrls: ['./order-list.component.scss'],
+    standalone: false
 })
 export class OrderListComponent implements OnInit, OnDestroy {
   type = Order;

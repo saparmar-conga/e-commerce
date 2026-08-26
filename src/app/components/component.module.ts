@@ -20,7 +20,7 @@ import { ProgressComponent } from './progress/progress.component';
 @NgModule({
   imports: [
     CommonModule,
-    ModalModule.forRoot(),
+    ModalModule,
     MiniProfileModule,
     MiniCartModule,
     LaddaModule,
@@ -28,7 +28,7 @@ import { ProgressComponent } from './progress/progress.component';
     RouterModule,
     ConstraintRuleModule,
     NgScrollbarModule,
-    TooltipModule.forRoot(),
+    TooltipModule,
     ToastrModule.forRoot({ onActivateTick: true }),
     OutputFieldModule,
     ButtonModule,

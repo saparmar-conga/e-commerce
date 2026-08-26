@@ -3,15 +3,16 @@ import { Cart, StorefrontService, Storefront, UserService, CartService, Constrai
 import { Router } from '@angular/router';
 import { QuoteService, Quote, SummaryGroup } from '@congarevenuecloud/ecommerce';
 import { BsModalService } from 'ngx-bootstrap/modal';
-import { BsModalRef } from 'ngx-bootstrap/modal/bs-modal-ref.service';
+import { BsModalRef } from 'ngx-bootstrap/modal';
 import { Observable } from 'rxjs';
 import { find, get, sum } from 'lodash';
 import { take, flatMap } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-cart-summary',
-  templateUrl: './cart-summary.component.html',
-  styleUrls: ['./cart-summary.component.scss']
+    selector: 'app-cart-summary',
+    templateUrl: './cart-summary.component.html',
+    styleUrls: ['./cart-summary.component.scss'],
+    standalone: false
 })
 
 

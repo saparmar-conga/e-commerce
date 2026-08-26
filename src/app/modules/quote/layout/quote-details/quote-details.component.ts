@@ -6,7 +6,7 @@ import { filter, map, take, switchMap, catchError } from 'rxjs/operators';
 import { get, set, first, map as _map, isEmpty, join, split, trim, isNil } from 'lodash';
 import { Observable, of, BehaviorSubject, Subscription, combineLatest, forkJoin } from 'rxjs';
 import { BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
-import { BsModalRef } from 'ngx-bootstrap/modal/bs-modal-ref.service';
+import { BsModalRef } from 'ngx-bootstrap/modal';
 import { FilterOperator, PlatformConstants } from '@congarevenuecloud/core';
 import {
   UserService, QuoteService, Quote, Order, OrderService, AttachmentService,
@@ -17,10 +17,11 @@ import { ExceptionService, LookupOptions, ToasterPosition, FileOutput, AddCommen
 import { DsrService } from '../../../../services/dsr.service';
 
 @Component({
-  selector: 'app-quote-details',
-  templateUrl: './quote-details.component.html',
-  styleUrls: ['./quote-details.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-quote-details',
+    templateUrl: './quote-details.component.html',
+    styleUrls: ['./quote-details.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class QuoteDetailsComponent implements OnInit, OnDestroy {
 
@@ -52,11 +53,11 @@ export class QuoteDetailsComponent implements OnInit, OnDestroy {
 
   quoteSubscription: Subscription[] = [];
 
+  @ViewChild('viewCommentsRef') viewCommentsRef: any;
+
   showPresentTemplate = false;
 
   showReqChangesModal = false;
-
-  showViewCommentsComponent = true;
 
   viewCommentsConfig: ViewCommentsConfig = {
     modalOptions: { 'class': 'modal-lg', 'backdrop': 'static', 'keyboard': true },
@@ -245,6 +246,7 @@ export class QuoteDetailsComponent implements OnInit, OnDestroy {
     this.quoteSubscription.push(this.quoteService.updateQuote(quote.Id, payload).pipe(switchMap(c => this.updateQuoteValue(c))).subscribe(r => {
       this.quote = r;
       set(this.quote, 'Items', quoteItems);
+      this.cdr.detectChanges();
     }));
   }
 
@@ -254,6 +256,7 @@ export class QuoteDetailsComponent implements OnInit, OnDestroy {
       map((updatedQuote: Quote) => {
         this.order$ = this.orderService.getOrderByQuote(get(updatedQuote, 'Id'));
         this.quote = updatedQuote;
+        this.cdr.detectChanges();
         return updatedQuote;
       })
     );
@@ -638,20 +641,13 @@ export class QuoteDetailsComponent implements OnInit, OnDestroy {
     }
     if (event && event.action === 'submit') {
       this.showReqChangesModal = false;
-
-      this.showViewCommentsComponent = false;
-      setTimeout(() => {
-        this.showViewCommentsComponent = true;
-      }, 100);
+      this.viewCommentsRef?.loadInitialComments();
     }
   }
 
   handleAddCommentsChanges(event: any) {
     if (event && event.action === 'submit') {
-      this.showViewCommentsComponent = false;
-      setTimeout(() => {
-        this.showViewCommentsComponent = true;
-      }, 100);
+      this.viewCommentsRef?.loadInitialComments();
     }
   }
 
@@ -746,4 +742,3 @@ export class QuoteDetailsComponent implements OnInit, OnDestroy {
     }
   }
 }
-

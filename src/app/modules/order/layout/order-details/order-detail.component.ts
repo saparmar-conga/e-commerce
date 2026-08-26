@@ -11,10 +11,11 @@ import {
 } from '@congarevenuecloud/ecommerce';
 import { ExceptionService, LookupOptions, FileOutput } from '@congarevenuecloud/elements';
 @Component({
-  selector: 'app-order-detail',
-  templateUrl: './order-detail.component.html',
-  styleUrls: ['./order-detail.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-order-detail',
+    templateUrl: './order-detail.component.html',
+    styleUrls: ['./order-detail.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class OrderDetailComponent implements OnInit, OnDestroy, AfterViewChecked {
 
@@ -190,6 +191,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy, AfterViewChecked
       take(1),
       map((updatedOrder: Order) => {
         this.order = updatedOrder;
+        this.cdr.detectChanges();
         return updatedOrder;
       })
     );

@@ -13,9 +13,10 @@ import { DsrService } from '../../../services/dsr.service';
  * Product list component shows all the products in a list for user selection.
  */
 @Component({
-  selector: 'app-product-list',
-  templateUrl: './product-list.component.html',
-  styleUrls: ['./product-list.component.scss']
+    selector: 'app-product-list',
+    templateUrl: './product-list.component.html',
+    styleUrls: ['./product-list.component.scss'],
+    standalone: false
 })
 export class ProductListComponent implements OnInit, OnDestroy {
   /**

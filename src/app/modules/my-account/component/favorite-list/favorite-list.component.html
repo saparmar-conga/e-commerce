@@ -10,10 +10,17 @@
 <!-- Table component rendering list of favorites with applicable actions and pagination -->
 <div class="row">
   <div class="col-12 bg-white">
-    <div *ngIf="(view$ | async) as view; else spinner">
-      <apt-table *ngIf="view?.tableOptions; else loading" [type]="type" [options]="view?.tableOptions"
+    @if (view$ | async; as view) {
+      @if (view?.tableOptions) {
+      <apt-table [type]="type" [options]="view?.tableOptions"
         [showErrorToaster]="true" [payload]="payload"></apt-table>
-    </div>
+      } @else {
+      <ng-container *ngTemplateOutlet="spinner"></ng-container>
+      }
+    } @else {
+    <!-- Spinner dots while data is loading -->
+    <ng-container *ngTemplateOutlet="spinner"></ng-container>
+    }
   </div>
 </div>
 

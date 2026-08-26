@@ -12,9 +12,10 @@ import {
 import { LookupOptions } from '@congarevenuecloud/elements';
 
 @Component({
-  selector: 'app-request-quote-form',
-  templateUrl: './request-quote-form.component.html',
-  styleUrls: ['./request-quote-form.component.scss']
+    selector: 'app-request-quote-form',
+    templateUrl: './request-quote-form.component.html',
+    styleUrls: ['./request-quote-form.component.scss'],
+    standalone: false
 })
 export class RequestQuoteFormComponent implements OnInit, OnDestroy {
   @ViewChild('form', { static: false }) form: NgForm;

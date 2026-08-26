@@ -1,15 +1,16 @@
-<div class="card" *ngIf="!isGuest; else guestTemplate ">
+@if (!isGuest) {
+<div class="card">
   <div class="card-body">
     <!-- Row 1: Quote Title | Price List -->
     <div class="row">
       <div class="col-12 col-md-6">
-        <div class="form-group">
+        <div class="mb-3">
           <apt-input-field [entity]="quote" [field]="'ProposalName'" [(ngModel)]="quote.ProposalName" [required]="true" [errorMsg]="errMessages.requiredProposalName"
             (ngModelChange)="quoteChange()" [label]="'CREATE_QUOTE.QUOTE_TITLE' | translate"></apt-input-field>
         </div>
       </div>
       <div class="col-12 col-md-6">
-        <div class="form-group">
+        <div class="mb-3">
           <apt-output-field [record]="quote.PriceList" field="Name" [label]="'CUSTOM_LABELS.PRICELIST' | translate"
             [editable]="false" [showQuickView]="true"></apt-output-field>
         </div>
@@ -18,7 +19,7 @@
     <!-- Row 2: Primary Contact | RFP Response Due Date -->
     <div class="row">
       <div class="col-12 col-md-6">
-        <div class="form-group">
+        <div class="mb-3">
           <apt-input-field placeholder="{{'CREATE_QUOTE.SEARCH_CONTACTS' | translate }}" [entity]="quote"
             [field]="'PrimaryContact'" [lookupOptions]="lookupOptions" [required]="true"
             [(ngModel)]="quote.PrimaryContact" (ngModelChange)="primaryContactChange()"
@@ -27,7 +28,7 @@
         </div>
       </div>
       <div class="col-12 col-md-6">
-        <div class="form-group">
+        <div class="mb-3">
           <apt-input-field [entity]="quote" [field]="'RFPResponseDueDate'" [(ngModel)]="quote.RFPResponseDueDate"
             (ngModelChange)="quoteChange()">
           </apt-input-field>
@@ -37,30 +38,34 @@
     <!-- Row 3: Ship To | Bill To -->
     <div class="row">
       <div class="col-12 col-md-6">
-        <div class="form-group">
+        <div class="mb-3">
           <apt-input-field [entity]="quote" [field]="'ShipToAccount'" [(ngModel)]="quote.ShipToAccount"
             (ngModelChange)="shipToChange()"></apt-input-field>
-          <small class="px-1 font-italic d-block" *ngIf="shipToAccount$ | async as shipToAccount">
-            <apt-address [ngModel]="quote?.ShipToAccount" [readonly]="true" type="Shipping" [showLabel]="false">
-            </apt-address>
-          </small>
+          @if (shipToAccount$ | async; as shipToAccount) {
+            <small class="px-1 fst-italic d-block">
+              <apt-address [ngModel]="quote?.ShipToAccount" [readonly]="true" type="Shipping" [showLabel]="false">
+              </apt-address>
+            </small>
+          }
         </div>
       </div>
       <div class="col-12 col-md-6">
-        <div class="form-group">
+        <div class="mb-3">
           <apt-input-field [entity]="quote" [field]="'BillToAccount'" [(ngModel)]="quote.BillToAccount"
             (ngModelChange)="billToChange()"></apt-input-field>
-          <small class="px-1 font-italic d-block" *ngIf="billToAccount$ | async as billToAccount">
-            <apt-address [ngModel]="quote?.BillToAccount" [readonly]="true" type="Billing" [showLabel]="false">
-            </apt-address>
-          </small>
+          @if (billToAccount$ | async; as billToAccount) {
+            <small class="px-1 fst-italic d-block">
+              <apt-address [ngModel]="quote?.BillToAccount" [readonly]="true" type="Billing" [showLabel]="false">
+              </apt-address>
+            </small>
+          }
         </div>
       </div>
     </div>
     <!-- Row 4: Source Channel -->
     <div class="row">
       <div class="col-12 col-md-6">
-        <div class="form-group">
+        <div class="mb-3">
           <apt-output-field [record]="quote" field="SourceChannel" [label]="'COMMON.SOURCE_CHANNEL' | translate"
             [editable]="false"></apt-output-field>
         </div>
@@ -68,13 +73,13 @@
     </div>
   </div>
 </div>
-<ng-template #guestTemplate>
+} @else {
   <div class="card">
     <div class="card-body">
       <form class="needs-validation" novalidate #form="ngForm">
         <div class="row">
           <div class="col-12 col-md-6">
-            <div class="form-group">
+            <div class="mb-3">
               <apt-input-field name="proposalName" [entity]="quote" [field]="'ProposalName'"
                 [(ngModel)]="quote.ProposalName" (ngModelChange)="quoteChange()" [required]="true"
                 [errorMsg]="errMessages.requiredProposalName"
@@ -82,29 +87,29 @@
             </div>
           </div>
           <div class="col-12 col-md-6">
-            <div class="form-group">
+            <div class="mb-3">
               <apt-input-field [entity]="quote" name="rfpResponseDueDate" [field]="'RFPResponseDueDate'"
                 [(ngModel)]="quote.RFPResponseDueDate" (ngModelChange)="quoteChange()">
               </apt-input-field>
             </div>
           </div>
         </div>
-        <ng-container *ngIf="primaryContact">
+        @if (primaryContact) {
           <div class="row">
             <div class="col-md-6">
-              <apt-input-field name="firstName" [labelClass]="'font-weight-normal'" [entity]="primaryContact"
+              <apt-input-field name="firstName" [labelClass]="'fw-normal'" [entity]="primaryContact"
                 [field]="'FirstName'" (ngModelChange)="quoteChange()" [required]="true"
                 [errorMsg]="errMessages.requiredFirstName" [(ngModel)]="primaryContact.FirstName">
               </apt-input-field>
             </div>
             <div class="col-md-6">
-              <apt-input-field name="lastName" [labelClass]="'font-weight-normal'" [entity]="primaryContact"
+              <apt-input-field name="lastName" [labelClass]="'fw-normal'" [entity]="primaryContact"
                 [field]="'LastName'" (ngModelChange)="quoteChange()" [required]="true"
                 [errorMsg]="errMessages.requiredLastName" [(ngModel)]="primaryContact.LastName">
               </apt-input-field>
             </div>
             <div class="col-md-6">
-              <apt-input-field name="email" [labelClass]="'font-weight-normal'" [placeholder]="'you@example.com'"
+              <apt-input-field name="email" [labelClass]="'fw-normal'" [placeholder]="'you@example.com'"
                 [entity]="primaryContact" (ngModelChange)="quoteChange()" [field]="'Email'" [required]="true"
                 [errorMsg]="errMessages.requiredEmail" [(ngModel)]="primaryContact.Email">
               </apt-input-field>
@@ -115,23 +120,23 @@
           </apt-address>
 
           <hr class="my-4">
-          <div class="custom-control custom-checkbox mb-3">
-            <input type="checkbox" class="custom-control-input" id="same-address"
+          <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="same-address"
               [(ngModel)]="shippingEqualsBilling" name="shippingEqualsBilling">
-            <label class="custom-control-label pt-1" for="same-address">{{'CART.SHIPPING_AS_BILLING' |
+            <label class="form-check-label pt-1" for="same-address">{{'CART.SHIPPING_AS_BILLING' |
               translate}}</label>
           </div>
 
           <!-- Show shipping address section only when checkbox is unchecked -->
-          <div *ngIf="!shippingEqualsBilling">
-            <h6 class="font-weight-bold text-uppercase mb-3">{{'CART.SHIPPING_ADDRESS' | translate}}</h6>
+          @if (!shippingEqualsBilling) {
+            <h6 class="fw-bold text-uppercase mb-3">{{'CART.SHIPPING_ADDRESS' | translate}}</h6>
             <apt-address [(ngModel)]="primaryContact" (addressChange)="quoteChange()" [type]="Shipping" [form]="form" 
               name="shippingAddress" [required]="true">
             </apt-address>
-          </div>
-        </ng-container>
+          }
+        }
       </form>
 
     </div>
   </div>
-</ng-template>
+}

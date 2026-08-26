@@ -3,69 +3,69 @@ import { FieldFilter } from '@congarevenuecloud/ecommerce';
 import { FilterOperator } from '@congarevenuecloud/core';
 
 @Component({
-  selector: 'app-price-type-filter',
-  template: `
+    selector: 'app-price-type-filter',
+    template: `
     <div class="card animated fadeIn">
       <div class="card-body">
         <h5 class="card-title">{{'INSTALLED_PRODUCTS.PRICE_TYPE_FILTER.PRICE_TYPE' | translate}} </h5>
-        <ul class="list-unstyled pl-2">
+        <ul class="list-unstyled ps-2">
           <li>
-            <div class="custom-control custom-radio">
+            <div class="form-check">
               <input
                 type="radio"
                   id="priceTypeAll"
-                  class="custom-control-input"
+                  class="form-check-input"
                   name="priceType"
                   value=""
                   (change)="handleCheckChange($event)"
                   checked
                 >
-              <label class="custom-control-label pt-1" for="priceTypeAll">
+              <label class="form-check-label pt-1" for="priceTypeAll">
               {{'INSTALLED_PRODUCTS.PRICE_TYPE_FILTER.ALL' | translate}}
               </label>
             </div>
           </li>
           <li class="pt-1">
-            <div class="custom-control custom-radio">
+            <div class="form-check">
               <input
                 type="radio"
                 id="oneTime"
-                class="custom-control-input"
+                class="form-check-input"
                 name="priceType"
                 value="One Time"
                 (change)="handleCheckChange($event)"
               >
-              <label class="custom-control-label pt-1" for="oneTime">
+              <label class="form-check-label pt-1" for="oneTime">
               {{'INSTALLED_PRODUCTS.PRICE_TYPE_FILTER.ONE_TIME' | translate}}
               </label>
             </div>
           </li>
           <li class="pt-1">
-            <div class="custom-control custom-radio">
+            <div class="form-check">
               <input
                 type="radio"
                 id="recurring"
-                class="custom-control-input"
+                class="form-check-input"
                 name="priceType"
                 value="Recurring"
                 (change)="handleCheckChange($event)"
               >
-              <label class="custom-control-label pt-1" for="recurring">
+              <label class="form-check-label pt-1" for="recurring">
               {{'INSTALLED_PRODUCTS.PRICE_TYPE_FILTER.RECURRING' | translate}}
               </label>
             </div>
           </li>
           <li class="pt-1">
-            <div class="custom-control custom-radio">
+            <div class="form-check">
               <input
                 type="radio"
                 id="usage"
-                class="custom-control-input"
+                class="form-check-input"
                 name="priceType"
                 value="Usage"
                 (change)="handleCheckChange($event)"
               >
-              <label class="custom-control-label pt-1" for="usage">
+              <label class="form-check-label pt-1" for="usage">
               {{'INSTALLED_PRODUCTS.PRICE_TYPE_FILTER.USAGE' | translate}}
               </label>
             </div>
@@ -73,7 +73,8 @@ import { FilterOperator } from '@congarevenuecloud/core';
         </ul>
       </div>
     </div>
-  `
+  `,
+    standalone: false
 })
 export class PriceTypeFilterComponent {
   /**
