@@ -5,9 +5,10 @@ import { ModalDirective } from 'ngx-bootstrap/modal';
 import { map as _map, set, some } from 'lodash';
 import { Category, CategoryService } from '@congarevenuecloud/ecommerce';
 @Component({
-  selector: 'app-category-carousel',
-  templateUrl: './category-carousel.component.html',
-  styleUrls: ['./category-carousel.component.scss']
+    selector: 'app-category-carousel',
+    templateUrl: './category-carousel.component.html',
+    styleUrls: ['./category-carousel.component.scss'],
+    standalone: false
 })
 export class CategoryCarouselComponent implements OnInit {
 

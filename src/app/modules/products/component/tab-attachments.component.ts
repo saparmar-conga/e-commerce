@@ -11,8 +11,8 @@ import {
   ProductInformationService,
 } from '@congarevenuecloud/ecommerce';
 @Component({
-  selector: 'app-tab-attachments',
-  template: `
+    selector: 'app-tab-attachments',
+    template: `
     <table class="table table-sm">
       <thead>
         <tr>
@@ -30,8 +30,10 @@ import {
           </th>
         </tr>
       </thead>
+      @if (productInformation$ | async; as productInformation) {
       <tbody>
-        <tr *ngFor="let attachment of productInformation$ | async">
+        @for (attachment of productInformation; track attachment.Id) {
+        <tr>
           <td>
             <a href="javascript:void(0);" (click)="downloadAttachment(attachment)">{{ attachment.Name }}</a>
           </td>
@@ -39,17 +41,20 @@ import {
           <td>{{ attachment?.CreatedDate | date: 'short' }}</td>
           <td>{{ attachment?.InformationType }}</td>
         </tr>
+        }
       </tbody>
+      }
     </table>
   `,
-  styles: [
-    `
+    styles: [
+        `
       :host {
         font-size: smaller;
       }
     `,
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 /**
  * Tab Attachments Component displays the list of attachment for the product.

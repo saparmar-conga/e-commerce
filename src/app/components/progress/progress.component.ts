@@ -2,10 +2,11 @@ import { Component, OnInit, ChangeDetectionStrategy, Input, OnChanges } from '@a
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'app-progress',
-  templateUrl: './progress.component.html',
-  styleUrls: ['./progress.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-progress',
+    templateUrl: './progress.component.html',
+    styleUrls: ['./progress.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ProgressComponent implements OnInit, OnChanges {
 

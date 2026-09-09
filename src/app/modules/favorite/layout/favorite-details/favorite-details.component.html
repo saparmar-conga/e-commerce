@@ -1,23 +1,29 @@
-<app-detail *ngIf="favorite$ | async as favorite; else loading" [context]="favorite" [route]="'favorites'">
-  <div *ngIf="favorite?.IsActive" class="primary-actions d-lg-block d-md-block d-sm-none d-none pl-2 pr-3">
+@if (favorite$ | async; as favorite) {
+<app-detail [context]="favorite" [route]="'favorites'">
+  @if (favorite?.IsActive) {
+  <div class="primary-actions d-lg-block d-md-block d-sm-none d-none ps-2 pe-3">
     <button type="button" class="btn btn-primary btn-raised px-4 text-nowrap" (click)="addFavoriteToCart(favorite)"
       [ladda]="isLoading" data-style="zoom-in">
       {{ "COMMON.ADD_TO_CART" | translate }}
     </button>
   </div>
+  }
 
   <div class="detail-header">
-    <div class="d-flex align-items-end mb-2 py-2 pl-2">
+    <div class="d-flex align-items-end mb-2 py-2 ps-2">
       <h3 class="m-0">{{favorite?.Name}}</h3>
-      <span class="badge badge-info ml-3 px-3 py-1 border"
-        *ngIf="!favorite?.IsActive">{{'MY_ACCOUNT.FAVORITE_DETAIL.INACTIVE' | translate}}</span>
+      @if (!favorite?.IsActive) {
+      <span class="badge text-bg-info ms-3 px-3 py-1 border">{{'MY_ACCOUNT.FAVORITE_DETAIL.INACTIVE' | translate}}</span>
+      }
     </div>
-    <div *ngIf="favorite?.IsActive" class="d-lg-none d-md-none d-sm-block d-block d-flex align-items-end pl-2">
+    @if (favorite?.IsActive) {
+    <div class="d-lg-none d-md-none d-sm-block d-block d-flex align-items-end ps-2">
       <button type="button" class="btn btn-primary btn-raised px-4" (click)="addFavoriteToCart(favorite)"
         [ladda]="isLoading" data-style="zoom-in">
         {{ "COMMON.ADD_TO_CART" | translate }}
       </button>
     </div>
+    }
   </div>
 
   <app-detail-section [title]="'DETAILS.FAVORITE_SUMMARY' | translate">
@@ -33,7 +39,8 @@
             <div>
               <apt-alert [record]="favorite"></apt-alert>
             </div>
-            <div *ngIf="user$ | async as user">
+            @if (user$ | async; as user) {
+            <div>
               <div class="row">
                 <div class="flex-shrink-1 col-md-4 mb-2">
                   <apt-output-field [record]="favorite" field="Name" [editable]="
@@ -91,6 +98,7 @@
                 </div>
               </div>
             </div>
+            }
           </div>
         </div>
       </div>
@@ -105,22 +113,27 @@
         </h5>
       </div>
       <div class="card-body">
-        <table class="table" *ngIf="lineItems$ | async as lineItems; else loading">
+        @if (lineItems$ | async; as lineItems) {
+        <table class="table">
           <tbody>
-            <ng-container *ngFor="let item of lineItems; let i = index">
-              <apt-line-item-table-row [index]="i" [parent]="item.MainLine" [options]="item.Options"
-                [children]="item.SecondaryLines" [editableFields]="false" [cart]="cart">
-              </apt-line-item-table-row>
-            </ng-container>
+            @for (item of lineItems; track item.MainLine?.Id ?? $index) {
+            <apt-line-item-table-row [index]="$index" [parent]="item.MainLine" [options]="item.Options"
+              [children]="item.SecondaryLines" [editableFields]="false" [cart]="cart">
+            </apt-line-item-table-row>
+            }
           </tbody>
         </table>
+        } @else {
+        <div class="d-flex justify-content-center pt-5">
+          <apt-dots></apt-dots>
+        </div>
+        }
       </div>
     </div>
   </app-detail-section>
 </app-detail>
-
-<ng-template #loading>
-  <div class="d-flex justify-content-center pt-5">
-    <apt-dots></apt-dots>
-  </div>
-</ng-template>
+} @else {
+<div class="d-flex justify-content-center pt-5">
+  <apt-dots></apt-dots>
+</div>
+}

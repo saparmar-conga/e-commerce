@@ -21,9 +21,10 @@ import { ClassType } from 'class-transformer/ClassTransformer';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
-  selector: 'app-asset-list',
-  templateUrl: './asset-list.component.html',
-  styleUrls: ['./asset-list.component.scss']
+    selector: 'app-asset-list',
+    templateUrl: './asset-list.component.html',
+    styleUrls: ['./asset-list.component.scss'],
+    standalone: false
 })
 export class AssetListComponent implements OnInit, OnDestroy {
   /**

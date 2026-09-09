@@ -25,7 +25,8 @@ import { DsrService } from '../../../services/dsr.service';
 @Component({
     selector: 'app-product-detail',
     templateUrl: './product-detail.component.html',
-    styleUrls: ['./product-detail.component.scss']
+    styleUrls: ['./product-detail.component.scss'],
+    standalone: false
 })
 /**
  * Product Details Component is the details of the product for standalone and bundle products with attributes and options.

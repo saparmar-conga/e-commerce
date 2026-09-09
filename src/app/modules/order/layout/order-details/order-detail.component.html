@@ -1,9 +1,10 @@
-<app-detail *ngIf="order$ | async as order; else loading" [context]="order" [route]="'orders'">
+@if (order$ | async; as order) {
+<app-detail [context]="order" [route]="'orders'">
   <apt-alert [record]="order" message="ERROR.UPDATE_ORDER_FAILED_ON_DETAILS_PAGE" [showOnlyMessage]="false"
     [showPriceError]="false">
   </apt-alert>
 
-  <div class="btn-group secondary-actions" role="group" [ngSwitch]="order?.Status"
+  <div class="btn-group secondary-actions" role="group"
     [tooltip]="order.hasErrors ? ('DETAILS.MISSING_REQ_FIELDS' | translate) : ''">
 
   </div>
@@ -12,20 +13,24 @@
       <span class="page-header d-lg-block d-md-block d-sm-none d-none">{{ order?.Name }}</span>
       <span tooltip="{{order?.Name}}" class="page-header d-lg-none d-md-none d-sm-block d-block">{{ order?.Name |
         truncate:13 }}</span>
-      <span class="badge badge-light ml-1 px-2 py-0" *ngIf="order?.Status">
+      @if (order?.Status) {
+      <span class="badge text-bg-light ms-1 px-2 py-0">
         <apt-output-field [record]="order" field="Status" [editable]="false" [valueOnly]="true"
           [valueClass]="'pt-0'"></apt-output-field>
       </span>
-      <div *ngIf="order?.Proposal as proposal" class="ml-auto">
+      }
+      @if (order?.Proposal; as proposal) {
+      <div class="ms-auto">
         <apt-output-field [record]="proposal" field="Name" labelClass="d-none" [editable]="false"
           [showQuickView]="true"></apt-output-field>
       </div>
+      }
     </div>
   </div>
 
   <app-detail-section [title]="'DETAILS.ORDER_SUMMARY' | translate">
     <div class="row pt-3">
-      <div class="col-12 col-md-8 pl-lg-3 pl-md-3">
+      <div class="col-12 col-md-8 ps-lg-3 ps-md-3">
         <div class="card">
           <div class="card-header border-bottom py-2">
             <h5>
@@ -68,7 +73,8 @@
                   [showQuickView]="true" (onChange)="refreshOrder($event, order, 'BillToAccount')"></apt-output-field>
               </div>
             </div>
-            <div class="row" *ngIf="isExpanded">
+            @if (isExpanded) {
+            <div class="row">
               <div class="flex-shrink-1 col-md-4 mb-2">
                 <apt-output-field [record]="order" field="PrimaryContact" displayValue="PrimaryContact"
                   [editable]="isLoggedIn && (orderStatusMap[order.Status] === 'Draft' || orderStatusMap[order.Status] === 'Generated' || orderStatusMap[order.Status] === 'Presented') && order.PaymentStatus !== 'Processed'"
@@ -83,24 +89,30 @@
                   (onChange)="refreshOrder($event.Description, order, 'Description')"></apt-output-field>
               </div>
 
-              <div class="flex-shrink-1 col-md-4 mb-2" *ngIf="isPaymentEnabled && order?.PaymentStatus">
+              @if (isPaymentEnabled && order?.PaymentStatus) {
+              <div class="flex-shrink-1 col-md-4 mb-2">
                 <div class="d-flex align-items-end">
                   <apt-output-field [record]="order" field="PaymentStatus" [editable]="false"></apt-output-field>
-                  <button *ngIf="isLoggedIn && order?.PaymentStatus === 'Pending'" 
-                          class="btn btn-primary btn-sm ml-2" 
+                  @if (isLoggedIn && order?.PaymentStatus === 'Pending') {
+                  <button class="btn btn-primary btn-sm ms-2" 
                           (click)="navigateToPayment(order)">
                     {{ 'CHECKOUT.PAY_NOW' | translate }}
                   </button>
+                  }
                 </div>
               </div>
+              }
 
-              <div class="flex-shrink-1 col-md-4 mb-2" *ngIf="isPaymentEnabled">
+              @if (isPaymentEnabled) {
+              <div class="flex-shrink-1 col-md-4 mb-2">
                 <apt-output-field [record]="order" field="PONumber" [editable]="false"></apt-output-field>
               </div>
+              }
               <div class="flex-shrink-1 col-md-4 mb-2">
                 <apt-output-field [record]="order" field="SourceChannel" [editable]="false"></apt-output-field>
               </div>
             </div>
+            }
             <div class="d-flex justify-content-start">
               <a href="javascript:void(0)" (click)="isExpanded = !isExpanded" class="text-decoration-none">
                 <span>
@@ -121,50 +133,62 @@
   <div class="pt-4">
     <app-detail-section [title]="'DETAILS.LINE_ITEMS' | translate" class="mt-3">
       <div class="card">
-        <div *ngIf="orderLineItems$ | async as orderLineItems">
+        @if (orderLineItems$ | async; as orderLineItems) {
+        <div>
           <div class="card-header border-bottom py-2">
             <h5>
               {{'DETAILS.LINE_ITEMS' | translate}}
-              <button class="btn text-primary px-2 ml-1 py-0" [ladda]="lineItemLoader" data-style="zoom-in"
-                *ngIf="isLoggedIn && (order?.Status === 'Draft' || order?.Status === 'Generated' || order?.Status === 'Presented') && orderLineItems?.length > 0 && order.PaymentStatus !== 'Processed'"
+              @if (isLoggedIn && (order?.Status === 'Draft' || order?.Status === 'Generated' || order?.Status === 'Presented') && orderLineItems?.length > 0 && order.PaymentStatus !== 'Processed') {
+              <button class="btn text-primary px-2 ms-1 py-0" [ladda]="lineItemLoader" data-style="zoom-in"
                 data-spinner-color="black" (click)="editOrderItems(order)">
                 <i class="fa fa-edit"></i>
                 {{'COMMON.EDIT' | translate}}
               </button>
+              }
             </h5>
           </div>
           <div class="card-body">
-            <div *ngIf="orderLineItems?.length > 0; else noProducts">
+            @if (orderLineItems?.length > 0) {
+            <div>
               <table class="table">
                 <tbody>
-                  <ng-container *ngFor="let item of orderLineItems; let i = index">
-                    <apt-line-item-table-row [cart]="cartRecord" [index]="i" [parent]="item.MainLine"
-                      [options]="item.Flat" [children]="item.SecondaryLines" [editableFields]="false">
-                    </apt-line-item-table-row>
-                  </ng-container>
+                  @for (item of orderLineItems; track item.MainLine?.Id; let i = $index) {
+                  <apt-line-item-table-row [cart]="cartRecord" [index]="i" [parent]="item.MainLine"
+                    [options]="item.Flat" [children]="item.SecondaryLines" [editableFields]="false">
+                  </apt-line-item-table-row>
+                  }
                 </tbody>
               </table>
             </div>
+            } @else {
+            <div class="d-flex align-items-center justify-content-center flex-column h-100 text-muted">
+              {{'COMMON.NO_ITEMS_FOUND' | translate}}
+            </div>
+            }
           </div>
         </div>
+        }
       </div>
     </app-detail-section>
   </div>
   <div class="pt-4">
     <app-detail-section [title]="'DETAILS.ATTACHMENTS' | translate" class="mt-3">
-      <div class="card" #attachmentSection *ngIf="attachmentList$ | async as attachmentList; else loading">
+      @if (attachmentList$ | async; as attachmentList) {
+      <div class="card" #attachmentSection>
         <div class="card-header border-bottom py-2">
           <h5>
             {{'DETAILS.ATTACHMENTS' | translate}}
-            <span *ngIf="attachmentList?.length > 0">({{attachmentList?.length}})</span>
+            @if (attachmentList?.length > 0) {
+            <span>({{attachmentList?.length}})</span>
+            }
           </h5>
         </div>
         <div class="card-body">
           <div class="row d-flex justify-content-between">
             <div [ngClass]="isLoggedIn ? 'col-lg-6 col-md-6' :'col-lg-12 col-md-12'">
-              <ng-container *ngIf="attachmentList?.length > 0; else emptyAttachments">
+              @if (attachmentList?.length > 0) {
                 <div class="table-container overflow-auto">
-                  <table class="table table-sm">
+                  <table class="table table-sm table-borderless">
                     <thead>
                       <tr>
                         <th scope="col">#</th>
@@ -191,14 +215,15 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr *ngFor="let attachment of attachmentList; let i = index">
+                      @for (attachment of attachmentList; track attachment.DocumentMetadata?.Id; let i = $index) {
+                      <tr>
                         <th scope="row">{{i + 1}}</th>
                         <td>
                           <a class="text-underline" (click)="downloadAttachment(attachment?.DocumentMetadata?.Id)"
                             target="_blank">{{attachment?.DocumentMetadata?.Name}}</a>
                         </td>
                         <td class="d-lg-table-cell d-md-table-cell d-sm-none d-none text-nowrap">
-                          {{(attachment?.DocumentMetadata?.FileSize/1024).toFixed(2)}}KB</td>
+                          {{((attachment?.DocumentMetadata?.FileSize ?? 0)/1024).toFixed(2)}}KB</td>
                         <td class="d-lg-table-cell d-md-table-cell d-sm-none d-none text-nowrap">
                           {{attachment?.DocumentMetadata?.FileType}}</td>
                         <td>
@@ -208,50 +233,52 @@
                             [editable]="false" [valueOnly]="true" [valueClass]="'pt-0'">
                           </apt-output-field>
                         </td>
-                        <td><button *ngIf="isLoggedIn" class="btn btn-link p-0 m-0"
+                        <td>
+                          @if (isLoggedIn) {
+                          <button class="btn btn-link p-0 m-0"
                             (click)="deleteAttachment(attachment)"
                             [ladda]="attachment?.DocumentMetadata?._metadata?.deleting" data-style="zoom-in"
                             data-spinner-color="black">
                             <span class="fa fa-trash"></span>
-                          </button></td>
+                          </button>
+                          }
+                        </td>
                       </tr>
+                      }
                     </tbody>
                   </table>
                 </div>
-              </ng-container>
-              <ng-template #emptyAttachments>
+              } @else {
                 <div class="d-flex align-items-center justify-content-center flex-column h-100 text-muted">
                   <i class="fa fa-4x fa-file-o mb-2"></i>
                   {{'COMMON.ATTACHMENT_DETAILS.NO_ATTACHMENTS' | translate}}
                 </div>
-              </ng-template>
+              }
             </div>
-            <span class="d-lg-block d-md-block d-sm-none d-none border-left" *ngIf="isLoggedIn"></span>
-            <div class="col-12 col-md-5 pt-lg-0 pt-md-0 pt-sm-3 pt-3" *ngIf="isLoggedIn">
-              <ng-container *ngTemplateOutlet="addAttachments"></ng-container>
+            @if (isLoggedIn) {
+            <span class="d-lg-block d-md-block d-sm-none d-none border-start p-0 flex-grow-0 flex-shrink-0" style="width: 1px;"></span>
+            }
+            @if (isLoggedIn) {
+            <div class="col-12 col-md-5 pt-lg-0 pt-md-0 pt-sm-3 pt-3">
+              <apt-file-uploader [fileUploadLabel]="'COMMON.ATTACHMENT_DETAILS.TITLE' | translate"
+                [supportedFileTypes]="supportedFileTypes" [maxFileSize]="maxFileSizeLimit"
+                (onFileUpload)="uploadAttachments($event)">
+              </apt-file-uploader>
             </div>
+            }
           </div>
         </div>
       </div>
+      } @else {
+      <div class="d-flex justify-content-center pt-5">
+        <apt-dots></apt-dots>
+      </div>
+      }
     </app-detail-section>
   </div>
 </app-detail>
-
-<ng-template #loading>
-  <div class="d-flex justify-content-center pt-5">
-    <apt-dots></apt-dots>
-  </div>
-</ng-template>
-
-<ng-template #noProducts>
-  <div class="d-flex align-items-center justify-content-center flex-column h-100 text-muted">
-    {{'COMMON.NO_ITEMS_FOUND' | translate}}
-  </div>
-</ng-template>
-
-<ng-template #addAttachments>
-  <apt-file-uploader [fileUploadLabel]="'COMMON.ATTACHMENT_DETAILS.TITLE' | translate"
-    [supportedFileTypes]="supportedFileTypes" [maxFileSize]="maxFileSizeLimit"
-    (onFileUpload)="uploadAttachments($event)">
-  </apt-file-uploader>
-</ng-template>
+} @else {
+<div class="d-flex justify-content-center pt-5">
+  <apt-dots></apt-dots>
+</div>
+}

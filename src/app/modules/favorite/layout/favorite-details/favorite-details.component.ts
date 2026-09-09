@@ -8,10 +8,11 @@ import { ExceptionService } from '@congarevenuecloud/elements';
 
 /** Favorite details component shows the details of the selected favorite configuration. */
 @Component({
-  selector: 'app-favorite-details',
-  templateUrl: './favorite-details.component.html',
-  styleUrls: ['./favorite-details.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-favorite-details',
+    templateUrl: './favorite-details.component.html',
+    styleUrls: ['./favorite-details.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class FavoriteDetailsComponent implements OnInit, OnDestroy {
 

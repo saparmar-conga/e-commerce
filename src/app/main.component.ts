@@ -3,18 +3,19 @@ import { Subscription, take } from 'rxjs';
 import { PageErrorService } from '@congarevenuecloud/ecommerce';
 
 @Component({
-  selector: 'app-main',
-  template: `
+    selector: 'app-main',
+    template: `
     <app-header></app-header>
-    <main *ngIf="!pageErrorCode; else errorPage">
-      <router-outlet></router-outlet>
-    </main>
-    <ng-template #errorPage>
+    @if (!pageErrorCode) {
+      <main>
+        <router-outlet></router-outlet>
+      </main>
+    } @else {
       <apt-error-page [errorMessage]="'ERROR.INVALID_STOREFRONT'"></apt-error-page>
-    </ng-template>
+    }
   `,
-  styles: [
-    `
+    styles: [
+        `
       main{
         min-height: calc(100vh - 108px);
         display: flex;
@@ -26,8 +27,9 @@ import { PageErrorService } from '@congarevenuecloud/ecommerce';
         display: flex;
       }
     `
-  ],
-  encapsulation: ViewEncapsulation.None
+    ],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class MainComponent implements OnInit {
 

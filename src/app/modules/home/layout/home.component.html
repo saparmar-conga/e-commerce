@@ -1,34 +1,50 @@
-<div *ngIf="loadData$ | async">
-  <div *ngIf="!isInvalidGuest else routingMessage">
-    <apt-alert [autoRun]="false"></apt-alert>
-    <apt-jumbotron></apt-jumbotron>
-    <div class="container pb-4 px-md-3 px-4">
-      <div *ngIf="!isCategoryLoading && !productsLoading; else loading">
-        <ng-container *ngIf="categories.length === 0">
-          <ng-container *ngTemplateOutlet="noCategoryFoundTemplate"></ng-container>
-        </ng-container>
+@if (loadData$ | async) {
+  <div>
+    @if (!isInvalidGuest) {
+      <apt-alert [autoRun]="false"></apt-alert>
+      <apt-jumbotron></apt-jumbotron>
+      <div class="container pb-4 px-md-3 px-4">
+        @if (!isCategoryLoading && !productsLoading) {
+          <div>
+            @if (categories.length === 0) {
+              <ng-container *ngTemplateOutlet="noCategoryFoundTemplate"></ng-container>
+            }
 
-        <ng-container *ngIf="categories.length > 0 && !hasProducts">
-          <ng-container *ngTemplateOutlet="noProductsFoundTemplate"></ng-container>
-        </ng-container>
+            @if (categories.length > 0 && !hasProducts) {
+              <ng-container *ngTemplateOutlet="noProductsFoundTemplate"></ng-container>
+            }
 
-        <ng-container *ngIf="categories.length > 0 && hasProducts">
-          <apt-product-carousel *ngIf="productListA$ | async as productListA; else loading" [productList]="productListA"
-            slides="4" [title]="categories[0]?.Label" [subtitle]="categories[0]?.Description"></apt-product-carousel>
+            @if (categories.length > 0 && hasProducts) {
+              @if (productListA$ | async; as productListA) {
+                <apt-product-carousel [productList]="productListA"
+                  slides="4" [title]="categories[0]?.Label" [subtitle]="categories[0]?.Description"></apt-product-carousel>
+              } @else {
+                <ng-container *ngTemplateOutlet="loading"></ng-container>
+              }
 
-          <apt-product-carousel *ngIf="productListB$ | async as productListB; else loading" [productList]="productListB"
-            slides="4" [title]="categories[1]?.Label" [subtitle]="categories[1]?.Description"></apt-product-carousel>
-        </ng-container>
+              @if (productListB$ | async; as productListB) {
+                <apt-product-carousel [productList]="productListB"
+                  slides="4" [title]="categories[1]?.Label" [subtitle]="categories[1]?.Description"></apt-product-carousel>
+              } @else {
+                <ng-container *ngTemplateOutlet="loading"></ng-container>
+              }
+            }
+          </div>
+        } @else {
+          <ng-container *ngTemplateOutlet="loading"></ng-container>
+        }
       </div>
-    </div>
-    <app-footer [categories]="categories"></app-footer>
+      <app-footer [categories]="categories"></app-footer>
+    } @else {
+      <ng-container *ngTemplateOutlet="routingMessage"></ng-container>
+    }
   </div>
-</div>
+}
 
 <ng-template #routingMessage>
-  <div class="d-flex justify-content-center align-items-center vh-100 font-weight-bold">
+  <div class="d-flex justify-content-center align-items-center vh-100 fw-bold">
     <span class="mb-1">{{ 'ERROR.INVALID_GUEST_MESSAGE' | translate }} </span>
-    <h4><span class="ml-1">{{counter}}</span></h4>
+    <h4><span class="ms-1">{{counter}}</span></h4>
   </div>
 </ng-template>
 

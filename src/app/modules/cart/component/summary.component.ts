@@ -4,7 +4,7 @@ import { Subscription, combineLatest } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { PopoverDirective } from 'ngx-bootstrap/popover';
-import { BsModalRef } from 'ngx-bootstrap/modal/bs-modal-ref.service';
+import { BsModalRef } from 'ngx-bootstrap/modal';
 import { TranslateService } from '@ngx-translate/core';
 import {
   Cart,
@@ -35,7 +35,8 @@ import { ProductConfigurationSummaryComponent } from '@congarevenuecloud/element
         padding: 26px;
         font-size: 75px;
     }
-  `]
+  `],
+  standalone: false
 })
 export class SummaryComponent implements OnChanges, OnDestroy {
   @Input() cart: Cart;

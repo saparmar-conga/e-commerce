@@ -9,9 +9,10 @@ import { TableOptions, ExceptionService, TableAction } from '@congarevenuecloud/
 /** Favorite list component loads and shows all the favorite configurations for logged in user. */
 
 @Component({
-  selector: 'app-favorite-list',
-  templateUrl: './favorite-list.component.html',
-  styleUrls: ['./favorite-list.component.scss']
+    selector: 'app-favorite-list',
+    templateUrl: './favorite-list.component.html',
+    styleUrls: ['./favorite-list.component.scss'],
+    standalone: false
 })
 export class FavoriteListComponent implements OnInit {
 

@@ -3,15 +3,16 @@ import { Observable, Subscription } from 'rxjs';
 import {get, set, find, defaultTo, isEmpty, isNil} from 'lodash';
 import { Quote, QuoteService, StorefrontService, Storefront, Cart, CartService, UserService, CartItem } from '@congarevenuecloud/ecommerce';
 import { BsModalService } from 'ngx-bootstrap/modal';
-import { BsModalRef } from 'ngx-bootstrap/modal/bs-modal-ref.service';
+import { BsModalRef } from 'ngx-bootstrap/modal';
 import { TranslateService } from '@ngx-translate/core';
 import { take } from 'rxjs/operators';
 import { NgForm } from '@angular/forms';
 
 @Component({
-  selector: 'app-create-quote',
-  templateUrl: `./create-quote.component.html`,
-  styles: []
+    selector: 'app-create-quote',
+    templateUrl: `./create-quote.component.html`,
+    styles: [],
+    standalone: false
 })
 export class CreateQuoteComponent implements OnInit {
   @ViewChild('confirmationTemplate') confirmationTemplate: TemplateRef<any>;

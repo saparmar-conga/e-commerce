@@ -8,9 +8,10 @@ import { Quote, QuoteService, LocalCurrencyPipe, AccountService, FieldFilter, Da
 import { TableOptions, CustomFilterView, FilterOptions, ExceptionService } from '@congarevenuecloud/elements';
 
 @Component({
-  selector: 'app-quote-list',
-  templateUrl: './quote-list.component.html',
-  styleUrls: ['./quote-list.component.scss']
+    selector: 'app-quote-list',
+    templateUrl: './quote-list.component.html',
+    styleUrls: ['./quote-list.component.scss'],
+    standalone: false
 })
 export class QuoteListComponent implements OnInit {
   type = Quote;

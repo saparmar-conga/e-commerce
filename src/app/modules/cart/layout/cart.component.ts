@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { Observable, Subscription, combineLatest, of } from 'rxjs';
 import { switchMap, take, catchError, map, shareReplay } from 'rxjs/operators';
 import { BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
-import { BsModalRef } from 'ngx-bootstrap/modal/bs-modal-ref.service';
+import { BsModalRef } from 'ngx-bootstrap/modal';
 import { PopoverDirective } from 'ngx-bootstrap/popover';
 import { get, uniqueId, find, defaultTo, isNil, set, isEmpty } from 'lodash';
 import { TranslateService } from '@ngx-translate/core';
@@ -13,11 +13,12 @@ import { User, Account, Cart, CartService, Order, OrderService, Contact, Contact
 import { ExceptionService, FileOutput, PaymentIntegrationComponent, PaymentResult, WizardStep } from '@congarevenuecloud/elements';
 
 @Component({
-  selector: 'app-cart',
-  templateUrl: './cart.component.html',
-  styleUrls: ['./cart.component.scss'],
-  encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-cart',
+    templateUrl: './cart.component.html',
+    styleUrls: ['./cart.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class CartComponent implements OnInit, OnDestroy {
   // Tracks the last cart ID where tax was calculated — survives component

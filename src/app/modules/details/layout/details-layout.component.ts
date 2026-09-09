@@ -7,9 +7,10 @@ import { DetailSectionComponent } from '../detail-section/detail-section.compone
  * Details Layout Component shows the details of the placed order or the requested quote.
  */
 @Component({
-  selector: 'app-detail',
-  templateUrl: './details-layout.component.html',
-  styleUrls: ['./details-layout.component.scss']
+    selector: 'app-detail',
+    templateUrl: './details-layout.component.html',
+    styleUrls: ['./details-layout.component.scss'],
+    standalone: false
 })
 export class DetailsLayoutComponent implements AfterContentInit, OnDestroy, OnChanges {
 
@@ -90,14 +91,11 @@ export class DetailsLayoutComponent implements AfterContentInit, OnDestroy, OnCh
     const headerElement = this.headerNav?.nativeElement;
     
     if (this.headerClass != null && window.pageYOffset < 35) {
-      this.headerClass = 'fixed-top position-fixed expand';
-      setTimeout(() => {
-        this.headerClass = null;
-        // Remove placeholder height when header returns to normal flow
-        if (headerElement) {
-          headerElement.style.minHeight = '';
-        }
-      }, 200);
+      // Snap back immediately — no expand animation to avoid covering breadcrumb
+      this.headerClass = null;
+      if (headerElement) {
+        headerElement.style.minHeight = '';
+      }
     } else if (window.pageYOffset >= 35) {
       // Only set min-height on the transition to fixed (not on every scroll event)
       if (previousHeaderClass !== 'fixed-top position-fixed' && headerElement) {

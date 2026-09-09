@@ -1,6 +1,6 @@
 # Digital Commerce Core Reference Template
 
-This is the base reference application for the Conga ecommerce product. Follow below instructions to get started. See the [docs](https://congarevenuecloud.github.io/202607.2.0/) for more detailed instructions on interacting with the underlying SDK.
+This is the base reference application for the Conga ecommerce product. Follow below instructions to get started. See the [docs](https://congarevenuecloud.github.io/202608.2.0/) for more detailed instructions on interacting with the underlying SDK.
 
 ---
 
@@ -47,9 +47,9 @@ You need to install Node.js and then the development tools. Node.js comes with a
 
 - [Node.js](http://nodejs.org)
 
-- [Angular](https://angular.io/docs)
+- [Angular](https://angular.dev/docs)
 
-- [Angular CLI](https://angular.io/cli)
+- [Angular CLI](https://angular.dev/cli)
 
 ### Get the Code
 
@@ -131,13 +131,13 @@ Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.
 
 ## Running end-to-end tests
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+Run `ng e2e` to execute the end-to-end tests via [Playwright](https://playwright.dev/) or [Cypress](https://www.cypress.io/) (Protractor was deprecated in Angular 12).
 
 <div id="digital-commerce-sdk"/>
 
 ## Digital Commerce SDK
 
-The objective of this section is to provide information about reference templates, base libraries, models, and components that can be inherited and reused. This section also provides information about services that are sufficient for most of the business logic. You can create orders, request quotes, and more with the **SDK libraries**. See the [Docs](https://congarevenuecloud.github.io/202607.2.0/) for more information.
+The objective of this section is to provide information about reference templates, base libraries, models, and components that can be inherited and reused. This section also provides information about services that are sufficient for most of the business logic. You can create orders, request quotes, and more with the **SDK libraries**. See the [Docs](https://congarevenuecloud.github.io/202608.2.0/) for more information.
 
 <div id="digital-commerce-for-rest-api-developers"/>
 
@@ -151,4 +151,4 @@ Refer the [Docs](https://developer.conga.com/revenue) to get detailed informatio
 
 ## Further help
 
-[Bootstrap](https://getbootstrap.com/docs/4.1/getting-started/introduction/)
+[Bootstrap](https://getbootstrap.com/docs/5.3/getting-started/introduction/)

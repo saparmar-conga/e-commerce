@@ -2,10 +2,12 @@
   <apt-breadcrumb [sobject]="category" [label]="(!category) ? ('HEADER.PRODUCT_CATALOG' | translate) : category?.Label"
     [hideHome]="isDsrMode">
   </apt-breadcrumb>
-  <div class="px-3 d-flex align-items-center" *ngIf="!isDsrMode">
-    <app-quick-add [layout]="'modal'" [fields]="fields" [productFieldType]="'lookup'"
-      [quoteFields]="quoteFields" [orderFields]="orderFields" [presetFields]="{ SourceChannel: 'E-Commerce' }" [btnClass]="'btn-custom-secondary border-0'"></app-quick-add>
-  </div>
+  @if (!isDsrMode) {
+    <div class="px-3 d-flex align-items-center">
+      <app-quick-add [layout]="'modal'" [fields]="fields" [productFieldType]="'lookup'"
+        [quoteFields]="quoteFields" [orderFields]="orderFields" [presetFields]="{ SourceChannel: 'E-Commerce' }" [btnClass]="'btn-custom-secondary border-0'"></app-quick-add>
+    </div>
+  }
 </div>
 
 <apt-alert [autoRun]="false"></apt-alert>
@@ -16,12 +18,14 @@
     <!-- <apt-installed-products></apt-installed-products> -->
   </div>
   <div class="row">
-    <div class="col-12 col-lg-3 pl-lg-3 pr-lg-2">
+    <div class="col-12 col-lg-3 ps-lg-3 pe-lg-2">
       <div>
-        <ng-container *ngIf="!isFavoriteCatalog">
-          <apt-product-type-filter *ngIf="!isDsrMode" class="mb-2" (onFilterAdd)="onFilterAdd($event, 'product')"
-            (onFilterRemove)="onFilterRemove($event)">
-          </apt-product-type-filter>
+        @if (!isFavoriteCatalog) {
+          @if (!isDsrMode) {
+            <apt-product-type-filter class="mb-2" (onFilterAdd)="onFilterAdd($event, 'product')"
+              (onFilterRemove)="onFilterRemove($event)">
+            </apt-product-type-filter>
+          }
 
           <apt-category-filter [category]="category" title="{{'PRODUCT_LIST.RELATED_CATEGORIES' | translate}}"
             limit="10" relationship="peers" [includeDescendants]="false" class="mb-2 mt-0" (onChange)="onCategory($event)"></apt-category-filter>
@@ -29,111 +33,144 @@
           <apt-category-filter [category]="category" title="{{'COMMON.SUB_CATEGORIES' | translate}}" limit="10"
             relationship="children" selection="multi" [includeDescendants]="false" class="mb-2" (onChange)="onSubcategoryFilter($event)">
           </apt-category-filter>
-          <div *ngIf="data$ | async as data">
+          @if (data$ | async; as data) {
             <apt-facet-filter class="mb-2" [facet]="data?.Facets" [record]="product"
               (userSelection)="getFacetFilterSelection($event)"></apt-facet-filter>
+          }
+        }
+        @if (!isDsrMode) {
+          <apt-favorite-filter [showScopeOptions]="isFavoriteCatalog"
+            (onFavoriteScope)="onFilterAdd($event, 'favorite')"></apt-favorite-filter>
+        }
+        @if (isFavoriteCatalog) {
+          <div class="card mb-2">
+            <div class="card-body">
+              <h5 class="card-title">{{ "FAVORITE.QUICK_LINK" | translate }}</h5>
+              <button [routerLink]="['/products']" class="btn btn-link text-primary p-0 d-flex align-items-center">
+                {{ "MY_ACCOUNT.PRODUCT_CATALOG.BROWSE_PRODUCTS" | translate }}
+              </button>
+            </div>
           </div>
-        </ng-container>
-        <apt-favorite-filter *ngIf="!isDsrMode" [showScopeOptions]="isFavoriteCatalog"
-          (onFavoriteScope)="onFilterAdd($event, 'favorite')"></apt-favorite-filter>
-        <div *ngIf="isFavoriteCatalog" class="card mb-2">
-          <div class="card-body">
-            <h5 class="card-title">{{ "FAVORITE.QUICK_LINK" | translate }}</h5>
-            <button [routerLink]="['/products']" class="btn btn-link text-primary p-0 d-flex align-items-center">
-              {{ "MY_ACCOUNT.PRODUCT_CATALOG.BROWSE_PRODUCTS" | translate }}
-            </button>
-          </div>
-        </div>
+        }
       </div>
     </div>
-    <div class="col-12 col-lg-9 pl-lg-2 pr-lg-3">
-      <ng-container *ngIf="isFavoriteCatalog; else showProducts">
-        <div *ngIf="(favorites$ | async) as favorites; else loading">
-          <nav *ngIf="favorites?.TotalRecord > 0 || favoriteSearchString"
-            class="border navbar navbar-light bg-white pl-2 pr-0 py-1 mb-3 rounded">
-            <pl-results [recordCount]="favorites?.TotalRecord" [limit]="pageSize" [offset]="(page - 1) * pageSize"
-              [page]="page" [query]="favoriteSearchString" [sortBy]="sortField"
-              (onSortChange)="onSortChange($event,'favorite')" (onPageSizeChange)="onPageSizeChange($event, 'favorite')"
-              class="d-block w-100">
-            </pl-results>
-          </nav>
-          <div *ngIf="(favorites?.FavoriteList?.length > 0)  || favoriteSearchString"
-            class="d-flex justify-content-between align-items-start mb-3 flex-wrap">
-            <!-- Pagination at the top for small screens  -->
-            <div class="d-flex d-md-none justify-content-start">
-              <ng-container
-                *ngTemplateOutlet="paginationTemplate; context: { totalItems: favorites?.TotalRecord, type: 'favorite', maxPageSize: 1 }"></ng-container>
-            </div>
-            <form class="search-container align-items-center">
-              <div class="input-icons mb-1">
-                <i class="fas fa-search icon"></i>
-                <input type="text" class="form-control" [(ngModel)]="favoriteSearchString"
-                  (ngModelChange)="searchFavorites($event)" placeholder="{{ 'FAVORITE.SEARCH_FAV' | translate }}"
-                  name="searchFavorite">
+    <div class="col-12 col-lg-9 ps-lg-2 pe-lg-3">
+      @if (isFavoriteCatalog) {
+        @if ((favorites$ | async); as favorites) {
+          @if (favorites?.TotalRecord > 0 || favoriteSearchString) {
+            <nav class="border navbar bg-white ps-2 pe-0 py-1 mb-3 rounded">
+              <pl-results [recordCount]="favorites?.TotalRecord" [limit]="pageSize" [offset]="(page - 1) * pageSize"
+                [page]="page" [query]="favoriteSearchString" [sortBy]="sortField"
+                (onSortChange)="onSortChange($event,'favorite')" (onPageSizeChange)="onPageSizeChange($event, 'favorite')"
+                class="d-block w-100">
+              </pl-results>
+            </nav>
+          }
+          @if ((favorites?.FavoriteList?.length > 0)  || favoriteSearchString) {
+            <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap">
+              <!-- Pagination at the top for small screens  -->
+              <div class="d-flex d-md-none justify-content-start">
+                <ng-container
+                  *ngTemplateOutlet="paginationTemplate; context: { totalItems: favorites?.TotalRecord, type: 'favorite', maxPageSize: 1 }"></ng-container>
               </div>
-            </form>
-            <!-- Pagination  at the top for medium and large screens -->
-            <div class="d-md-block d-none">
-              <ng-container
-                *ngTemplateOutlet="paginationTemplate; context: { totalItems: favorites?.TotalRecord, type: 'favorite', maxPageSize: 5 }"></ng-container>
+              <form class="search-container align-items-center">
+                <div class="input-icons mb-1">
+                  <i class="fas fa-search icon"></i>
+                  <input type="text" class="form-control" [(ngModel)]="favoriteSearchString"
+                    (ngModelChange)="searchFavorites($event)" placeholder="{{ 'FAVORITE.SEARCH_FAV' | translate }}"
+                    name="searchFavorite">
+                </div>
+              </form>
+              <!-- Pagination  at the top for medium and large screens -->
+              <div class="d-md-block d-none">
+                <ng-container
+                  *ngTemplateOutlet="paginationTemplate; context: { totalItems: favorites?.TotalRecord, type: 'favorite', maxPageSize: 5 }"></ng-container>
+              </div>
             </div>
-          </div>
+          }
           <!-- If search exists but no results match -->
-          <ng-container *ngIf="(favorites?.FavoriteList?.length > 0 ); else noFavoriteSearchResults">
-            <div *ngFor="let favorite of favorites.FavoriteList"
-              class="mb-2 border px-md-4 py-md-3 p-3 d-flex justify-content-between align-items-center">
-              <div class="mr-3">
-                <a *ngIf="favorite?.Name" [routerLink]="['/favorites', favorite?.Id]" target="_blank"
-                  class="mr-2 text-wrap text-break">
-                  {{ favorite?.Name }}
-                </a>
-                <div class="badge badge-pill badge-light py-0">
-                  <span [ngClass]="favorite?.Scope === 'Public' ? 'fa-users' : 'fa-user'" class="fa text-muted"></span>
-                  <div class="badge-class d-inline-block">
-                    <apt-output-field *ngIf="favorite?.Scope" [record]="favorite" field="Scope" [valueOnly]="true" [editable]="false"
-                      [valueClass]="'d-inline text-dark ml-2 mb-0 pt-0'">
-                    </apt-output-field>
+          @if (favorites?.FavoriteList?.length > 0) {
+            @for (favorite of favorites.FavoriteList; track favorite.Id ?? $index) {
+              <div class="mb-2 border px-md-4 py-md-3 p-3 d-flex justify-content-between align-items-center">
+                <div class="me-3">
+                  @if (favorite?.Name) {
+                    <a [routerLink]="['/favorites', favorite?.Id]" target="_blank"
+                      class="me-2 text-wrap text-break">
+                      {{ favorite?.Name }}
+                    </a>
+                  }
+                  <div class="badge rounded-pill text-bg-light py-0">
+                    <span [ngClass]="favorite?.Scope === 'Public' ? 'fa-users' : 'fa-user'" class="fa text-muted"></span>
+                    <div class="badge-class d-inline-block">
+                      @if (favorite?.Scope) {
+                        <apt-output-field [record]="favorite" field="Scope" [valueOnly]="true" [editable]="false"
+                          [valueClass]="'d-inline text-dark ms-2 mb-0 pt-0'">
+                        </apt-output-field>
+                      }
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-center justify-content-start mt-2">
+                    <label class="mb-0 me-1">{{ "COMMON.CREATED_DATE" | translate }}:</label>
+                    @if (favorite?.CreatedDate) {
+                      <apt-output-field 
+                        [record]="favorite"
+                        field="CreatedDate"
+                        [valueOnly]="true"
+                        [editable]="false"
+                        [valueClass]="'p-0'">
+                      </apt-output-field>
+                    }
+                  </div>
+                  <div class="d-flex align-items-center justify-content-start mt-2">
+                    <label class="mb-0 me-1">{{ "MY_ACCOUNT.ORDER_DETAIL.DESCRIPTION" | translate }}:</label>
+                    @if (favorite?.Description) {
+                      <span class="d-md-block d-sm-none d-none text-wrap text-break pe-4" [title]="favorite?.Description">
+                        {{ favorite?.Description | truncate:55 }}
+                      </span>
+                      <span class="d-md-none d-sm-block" [title]="favorite?.Description">
+                        {{ favorite?.Description | truncate:12 }}
+                      </span>
+                    } @else {
+                      <ng-container *ngTemplateOutlet="empty"></ng-container>
+                    }
                   </div>
                 </div>
-                <div class="d-flex align-items-center justify-content-start mt-2">
-                  <label class="mb-0 mr-1">{{ "COMMON.CREATED_DATE" | translate }}:</label>
-                  <apt-output-field 
-                    *ngIf="favorite?.CreatedDate"
-                    [record]="favorite"
-                    field="CreatedDate"
-                    [valueOnly]="true"
-                    [editable]="false"
-                    [valueClass]="'p-0'">
-                  </apt-output-field>
-                </div>
-                <div class="d-flex align-items-center justify-content-start mt-2">
-                  <label class="mb-0 mr-1">{{ "MY_ACCOUNT.ORDER_DETAIL.DESCRIPTION" | translate }}:</label>
-                  <ng-container *ngIf="favorite?.Description; else empty">
-                    <span class="d-md-block d-sm-none d-none text-wrap text-break pr-4" [title]="favorite?.Description">
-                      {{ favorite?.Description | truncate:55 }}
-                    </span>
-                    <span class="d-md-none d-sm-block" [title]="favorite?.Description">
-                      {{ favorite?.Description | truncate:12 }}
-                    </span>
-                  </ng-container>
+                <div class="d-flex align-items-center">
+                  <!-- Add to Cart button for large and medium screens -->
+                  <button type="button"
+                    class="btn btn-outline-primary btn-raised px-4 text-nowrap d-md-block d-sm-none d-none"
+                    (click)="addFavoriteToCart(favorite)" data-style="zoom-in" [ladda]="isLoading[favorite?.Id]">
+                    {{ "COMMON.ADD_TO_CART" | translate }}
+                  </button>
+                  <!-- Add to Cart button for small screens -->
+                  <button type="button"
+                    class="btn btn-outline-primary btn-raised px-4 text-nowrap btn-sm d-md-none d-sm-block"
+                    (click)="addFavoriteToCart(favorite)" data-style="zoom-in" [ladda]="isLoading[favorite?.Id]">
+                    {{ "COMMON.ADD_TO_CART" | translate }}
+                  </button>
                 </div>
               </div>
-              <div class="d-flex align-items-center">
-                <!-- Add to Cart button for large and medium screens -->
-                <button type="button"
-                  class="btn btn-outline-primary btn-raised px-4 text-nowrap d-md-block d-sm-none d-none"
-                  (click)="addFavoriteToCart(favorite)" data-style="zoom-in" [ladda]="isLoading[favorite?.Id]">
-                  {{ "COMMON.ADD_TO_CART" | translate }}
-                </button>
-                <!-- Add to Cart button for small screens -->
-                <button type="button"
-                  class="btn btn-outline-primary btn-raised px-4 text-nowrap btn-sm d-md-none d-sm-block"
-                  (click)="addFavoriteToCart(favorite)" data-style="zoom-in" [ladda]="isLoading[favorite?.Id]">
-                  {{ "COMMON.ADD_TO_CART" | translate }}
-                </button>
+            }
+          } @else {
+            @if (favoriteSearchString) {
+              <div class="text-center mt-4">
+                <span class="fa fa-database text-muted d-block mb-2 fa-4x"></span>
+                <h5>{{ 'FAVORITE.NO_RESULTS_FOUND' | translate }}</h5>
+                <p>{{ 'FAVORITE.NO_SEARCH_RESULTS' | translate }}</p>
               </div>
-            </div>
-          </ng-container>
+            } @else {
+              <div class="d-flex justify-content-center mt-5">
+                <div class="w-50 text-center">
+                  <span class="fa fa-star text-muted d-block mb-2 fa-4x"></span>
+                  <h5 class="my-3">{{ 'FAVORITE.EMPTY_FAVORITE' | translate }}</h5>
+                  <span>{{ 'FAVORITE.NO_FAVORITES_FOUND' | translate }}</span>
+                  <button class="btn btn-outline-primary mt-3 d-block mx-auto" [routerLink]="['/products']">
+                    {{ 'MY_ACCOUNT.PRODUCT_CATALOG.BROWSE_PRODUCTS' | translate }}
+                  </button>
+                </div>
+              </div>
+            }
+          }
           <!-- Pagination at the bottom for medium and large screens -->
           <div class="d-md-block d-none">
             <ng-container
@@ -145,177 +182,169 @@
             <ng-container
               *ngTemplateOutlet="paginationTemplate; context: { totalItems: favorites?.TotalRecord, type: 'favorite', maxPageSize: 1 }"></ng-container>
           </div>
-        </div>
-      </ng-container>
+        } @else {
+          <div class="d-flex justify-content-center pt-5">
+            <apt-dots></apt-dots>
+          </div>
+        }
+      } @else {
+        @if (!hasSearchError) {
+          @if (data$ | async; as data) {
+            @if (data?.TotalCount > 0) {
+              <nav class="border navbar bg-white ps-2 pe-0 py-1 mb-3 rounded">
+                <pl-results [recordCount]="data?.TotalCount" [limit]="pageSize" [offset]="(page - 1) * pageSize" [page]="page"
+                  [view]="view" [query]="searchString" [sortBy]="sortField" (onViewChange)="onView($event)"
+                  (onSortChange)="onSortChange($event, 'product')" (onPageSizeChange)="onPageSizeChange($event, 'product')"
+                  class="d-block w-100">
+                </pl-results>
+              </nav>
+
+              <!-- For large screens -->
+              @if (data?.TotalCount > 0) {
+                <div class="row d-lg-flex d-md-none d-sm-none d-none justify-content-center position-relative">
+                  <div class="col-12 d-lg-flex d-md-none d-sm-none d-none justify-content-center ">
+                    <ng-container
+                      *ngTemplateOutlet="paginationTemplate; context: { totalItems: data?.TotalCount, type: 'product', maxPageSize:5  }"></ng-container>
+                  </div>
+                  @if (!isDsrMode) {
+                    <div class="col-12 d-lg-flex justify-content-start mb-3 align-items-baseline">
+                      <apt-select-all class="mt-n3" [items]="data.Products"></apt-select-all>
+                      @if (selectedCount > 0) {
+                        <label class="ps-2 mt-n3 pb-0 mb-0 align-items-center d-flex">&#124;
+                          <span class="ps-1" [translate]="'PRODUCT_LIST.SELECT_ALL_MSG'"
+                            [translateParams]="{selectedCount: selectedCount, totalCount: data?.TotalCount | digitFormatter}">
+                          </span>
+                        </label>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- For medium and small screens -->
+              @if (data?.TotalCount > 0) {
+                <div class="d-lg-none d-md-flex d-sm-flex d-flex justify-content-center position-relative flex-column">
+                  <span class="d-lg-none d-md-flex d-sm-none d-none justify-content-center">
+                    <ng-container
+                      *ngTemplateOutlet="paginationTemplate; context: { totalItems: data?.TotalCount, type: 'product', maxPageSize:5 }"></ng-container>
+                  </span>
+
+                  <span class="d-block d-md-none d-flex justify-content-center">
+                    <ng-container
+                      *ngTemplateOutlet="paginationTemplate; context: { totalItems: data?.TotalCount, type: 'product', maxPageSize:1  }"></ng-container>
+                  </span>
+                  @if (!isDsrMode) {
+                    <div class="select-all d-block d-sm-block d-lg-none d-md-block mb-4 ps-3 position-relative">
+                      <div class="row">
+                        <apt-select-all class="justify-content-end" [items]="data.Products"></apt-select-all>
+                        @if (selectedCount > 0) {
+                          <label class="ps-2 mt-1 pb-0 mb-0 align-items-center d-flex ">&#124;
+                            <span class="ps-1" [translate]="'PRODUCT_LIST.SELECT_ALL_MSG'"
+                              [translateParams]="{selectedCount: selectedCount, totalCount: data?.TotalCount | digitFormatter}"></span>
+                          </label>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+
+              @if (view == 'grid' && data?.Products) {
+                <div class="row" [ngClass]="{'dsr-mode': isDsrMode}">
+                  @for (product of data?.Products; track product.Id ?? $index) {
+                    <div class="col-12 col-sm-6 col-md-4 col-xl-3 mb-3">
+                      <apt-product-card [product]="product" [showCheckbox]="!isDsrMode"></apt-product-card>
+                    </div>
+                  }
+                </div>
+              }
+
+              @if (view == 'list' && data?.Products) {
+                <div class="row" [ngClass]="{'dsr-mode': isDsrMode}">
+                  <div class="col-12">
+                    <ul class="list-unstyled list-group">
+                      @for (product of data?.Products; track product.Id ?? $index; let i = $index; let last = $last) {
+                        <li [class.mb-3]="last">
+                          <apt-product-card [product]="product" type="media" [showCheckbox]="!isDsrMode"></apt-product-card>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                </div>
+              }
+
+              @if (data?.TotalCount > 0) {
+                <div class="d-flex justify-content-center pagination">
+                  <!-- For large screens -->
+                  <span class="d-lg-flex d-md-none d-sm-none d-none">
+                    <ng-container
+                      *ngTemplateOutlet="paginationTemplate; context: { totalItems: data?.TotalCount, type: 'product', maxPageSize:5 }"></ng-container>
+                  </span>
+
+                  <span class="d-lg-none d-md-flex flex-row d-sm-none d-none justify-content-center">
+                    <ng-container
+                      *ngTemplateOutlet="paginationTemplate; context: { totalItems: data?.TotalCount, type: 'product', maxPageSize:5 }"></ng-container>
+                  </span>
+
+                  <!-- For medium and small screens -->
+                  <span class="d-block d-md-none d-flex justify-content-center">
+                    <ng-container
+                      *ngTemplateOutlet="paginationTemplate; context: { totalItems: data?.TotalCount, type: 'product', maxPageSize:1 }"></ng-container>
+                  </span>
+                </div>
+              }
+            } @else {
+              @if (searchString) {
+                <div class="d-flex justify-content-center mt-5">
+                  <div class="w-50"><span>{{'PRODUCT_LIST.YOUR_SEARCH' | translate}}</span>
+                    <span><strong><em>&#8212; {{searchString | safeHtml}}&nbsp;</em></strong></span>
+                    <span>{{'PRODUCT_LIST.NO_MATCH' | translate}}</span>
+                    <br>
+                    <br>
+                    <span>{{'PRODUCT_LIST.SUGGESTIONS' | translate}}</span>
+                    <ul class="ps-3">
+                      <li>{{'PRODUCT_LIST.SUGGESTIONS_1' | translate}}</li>
+                      <li>{{'PRODUCT_LIST.SUGGESTIONS_2' | translate}}</li>
+                      <li>{{'PRODUCT_LIST.SUGGESTIONS_3' | translate}}</li>
+                      <li>{{'PRODUCT_LIST.SUGGESTIONS_4' | translate}}</li>
+                      <li [innerHTML]="'PRODUCT_LIST.SUGGESTIONS_5' | translate"></li>
+                      <li>{{'PRODUCT_LIST.SUGGESTIONS_6' | translate}}</li>
+                    </ul>
+                  </div>
+                </div>
+              } @else {
+                <div class="d-flex justify-content-center mt-5 text-center">
+                  <div class="w-50">
+                    <span>{{'PRODUCT_LIST.NO_RESULT' | translate}}</span>
+                  </div>
+                </div>
+              }
+            }
+          } @else {
+            <div class="d-flex justify-content-center pt-5">
+              <apt-dots></apt-dots>
+            </div>
+          }
+        } @else {
+          <div class="d-flex justify-content-center fw-bold m-5">
+            {{'HEADER.MIN_VALIDATION_SEARCH_ERROR' | translate}}
+          </div>
+        }
+      }
     </div>
   </div>
 </div>
 
-<!-- No Search Results Template -->
-<ng-template #noFavoriteSearchResults>
-  <div class="text-center mt-4" *ngIf="favoriteSearchString;else noFavorites">
-    <span class="fa fa-database text-muted d-block mb-2 fa-4x"></span>
-    <h5>{{ 'FAVORITE.NO_RESULTS_FOUND' | translate }}</h5>
-    <p>{{ 'FAVORITE.NO_SEARCH_RESULTS' | translate }}</p>
-  </div>
-</ng-template>
-
-<ng-template #noFavorites>
-  <div class="d-flex justify-content-center mt-5">
-    <div class="w-50 text-center">
-      <span class="fa fa-star text-muted d-block mb-2 fa-4x"></span>
-      <h5 class="my-3">{{ 'FAVORITE.EMPTY_FAVORITE' | translate }}</h5>
-      <span>{{ 'FAVORITE.NO_FAVORITES_FOUND' | translate }}</span>
-      <button class="btn btn-outline-primary mt-3 d-block mx-auto" [routerLink]="['/products']">
-        {{ 'MY_ACCOUNT.PRODUCT_CATALOG.BROWSE_PRODUCTS' | translate }}
-      </button>
-    </div>
-  </div>
-</ng-template>
-
-<ng-template #loading>
-  <div class="d-flex justify-content-center pt-5">
-    <apt-dots></apt-dots>
-  </div>
-</ng-template>
-
-<ng-template #noResult>
-  <div *ngIf="searchString; else noResult">
-    <div class="d-flex justify-content-center mt-5">
-      <div class="w-50"><span>{{'PRODUCT_LIST.YOUR_SEARCH' | translate}}</span>
-        <span><strong><em>&#8212; {{searchString | safeHtml}}&nbsp;</em></strong></span>
-        <span>{{'PRODUCT_LIST.NO_MATCH' | translate}}</span>
-        <br>
-        <br>
-        <span>{{'PRODUCT_LIST.SUGGESTIONS' | translate}}</span>
-        <ul class="pl-3">
-          <li>{{'PRODUCT_LIST.SUGGESTIONS_1' | translate}}</li>
-          <li>{{'PRODUCT_LIST.SUGGESTIONS_2' | translate}}</li>
-          <li>{{'PRODUCT_LIST.SUGGESTIONS_3' | translate}}</li>
-          <li>{{'PRODUCT_LIST.SUGGESTIONS_4' | translate}}</li>
-          <li [innerHTML]="'PRODUCT_LIST.SUGGESTIONS_5' | translate"></li>
-          <li>{{'PRODUCT_LIST.SUGGESTIONS_6' | translate}}</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <ng-template #noResult>
-    <div class="d-flex justify-content-center mt-5 text-center">
-      <div class="w-50">
-        <span>{{'PRODUCT_LIST.NO_RESULT' | translate}}</span>
-      </div>
-    </div>
-  </ng-template>
-</ng-template>
-
-<ng-template #showSearchError>
-  <div class="d-flex justify-content-center font-weight-bold m-5">
-    {{'HEADER.MIN_VALIDATION_SEARCH_ERROR' | translate}}
-  </div>
-</ng-template>
-
-<ng-template #showProducts>
-  <div *ngIf="!hasSearchError else showSearchError">
-    <div *ngIf="data$ | async as data;else loading">
-      <div *ngIf="data?.TotalCount > 0; else noResult">
-        <nav class="border navbar navbar-light bg-white pl-2 pr-0 py-1 mb-3 rounded">
-          <pl-results [recordCount]="data?.TotalCount" [limit]="pageSize" [offset]="(page - 1) * pageSize" [page]="page"
-            [view]="view" [query]="searchString" [sortBy]="sortField" (onViewChange)="onView($event)"
-            (onSortChange)="onSortChange($event, 'product')" (onPageSizeChange)="onPageSizeChange($event, 'product')"
-            class="d-block w-100">
-          </pl-results>
-        </nav>
-
-        <!-- For large screens -->
-        <div class="row d-lg-flex d-md-none d-sm-none d-none justify-content-center position-relative"
-          *ngIf="data?.TotalCount > 0">
-          <div class="col-12 d-lg-flex d-md-none d-sm-none d-none justify-content-center ">
-            <ng-container
-              *ngTemplateOutlet="paginationTemplate; context: { totalItems: data?.TotalCount, type: 'product', maxPageSize:5  }"></ng-container>
-          </div>
-
-          <div class="col-12 d-lg-flex justify-content-start mb-3 align-items-baseline" *ngIf="!isDsrMode">
-            <apt-select-all class="mt-n3" [items]="data.Products"></apt-select-all>
-            <label class="pl-2 mt-n3 pb-0 mb-0 align-items-center d-flex" *ngIf="selectedCount > 0">&#124;
-              <span class="pl-1" [translate]="'PRODUCT_LIST.SELECT_ALL_MSG'"
-                [translateParams]="{selectedCount: selectedCount, totalCount: data?.TotalCount | digitFormatter}">
-              </span>
-            </label>
-          </div>
-        </div>
-
-        <!-- For medium and small screens -->
-        <div class="d-lg-none d-md-flex d-sm-flex d-flex justify-content-center position-relative flex-column"
-          *ngIf="data?.TotalCount > 0">
-
-          <span class="d-lg-none d-md-flex d-sm-none d-none justify-content-center">
-            <ng-container
-              *ngTemplateOutlet="paginationTemplate; context: { totalItems: data?.TotalCount, type: 'product', maxPageSize:5 }"></ng-container>
-          </span>
-
-          <span class="d-block d-md-none d-flex justify-content-center">
-            <ng-container
-              *ngTemplateOutlet="paginationTemplate; context: { totalItems: data?.TotalCount, type: 'product', maxPageSize:1  }"></ng-container>
-          </span>
-          <div class="select-all d-block d-sm-block d-lg-none d-md-block mb-4 pl-3 position-relative" *ngIf="!isDsrMode">
-            <div class="row">
-              <apt-select-all class="justify-content-end" [items]="data.Products"></apt-select-all>
-              <label class="pl-2 mt-1 pb-0 mb-0 align-items-center d-flex " *ngIf="selectedCount > 0">&#124;
-                <span class="pl-1" [translate]="'PRODUCT_LIST.SELECT_ALL_MSG'"
-                  [translateParams]="{selectedCount: selectedCount, totalCount: data?.TotalCount | digitFormatter}"></span>
-              </label>
-            </div>
-
-          </div>
-        </div>
-
-        <div class="row" *ngIf="view == 'grid' && data?.Products" [ngClass]="{'dsr-mode': isDsrMode}">
-          <div class="col-12 col-sm-6 col-md-4 col-xl-3 mb-3" *ngFor="let product of data?.Products">
-            <apt-product-card [product]="product" [showCheckbox]="!isDsrMode"></apt-product-card>
-          </div>
-        </div>
-
-        <div class="row" *ngIf="view == 'list' && data?.Products" [ngClass]="{'dsr-mode': isDsrMode}">
-          <div class="col-12">
-            <ul class="list-unstyled list-group">
-              <li *ngFor="let product of data?.Products let i = index; let last = last" [class.mb-3]="last">
-                <apt-product-card [product]="product" type="media" [showCheckbox]="!isDsrMode"></apt-product-card>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="d-flex justify-content-center pagination" *ngIf="data?.TotalCount > 0">
-          <!-- For large screens -->
-          <span class="d-lg-flex d-md-none d-sm-none d-none">
-            <ng-container
-              *ngTemplateOutlet="paginationTemplate; context: { totalItems: data?.TotalCount, type: 'product', maxPageSize:5 }"></ng-container>
-          </span>
-
-          <span class="d-lg-none d-md-flex flex-row d-sm-none d-none justify-content-center">
-            <ng-container
-              *ngTemplateOutlet="paginationTemplate; context: { totalItems: data?.TotalCount, type: 'product', maxPageSize:5 }"></ng-container>
-          </span>
-
-          <!-- For medium and small screens -->
-          <span class="d-block d-md-none d-flex justify-content-center">
-            <ng-container
-              *ngTemplateOutlet="paginationTemplate; context: { totalItems: data?.TotalCount, type: 'product', maxPageSize:1 }"></ng-container>
-          </span>
-        </div>
-      </div>
-    </div>
-  </div>
-</ng-template>
-
 <ng-template #paginationTemplate let-totalItems="totalItems" let-type="type" let-maxPageSize="maxPageSize">
-  <div class="d-flex justify-content-end pagination" *ngIf="totalItems > 0">
-    <pagination (pageChanged)="onPage($event, type)" [totalItems]="totalItems" [(ngModel)]="page" [boundaryLinks]="true"
-      [itemsPerPage]="pageSize" [maxSize]="maxPageSize" [firstText]="paginationButtonLabels.first"
-      [previousText]="paginationButtonLabels.previous" [responsive]="'true'" [nextText]="paginationButtonLabels.next"
-      [lastText]="paginationButtonLabels.last">
-    </pagination>
-  </div>
+  @if (totalItems > 0) {
+    <div class="d-flex justify-content-end pagination">
+      <pagination (pageChanged)="onPage($event, type)" [totalItems]="totalItems" [(ngModel)]="page" [boundaryLinks]="true"
+        [itemsPerPage]="pageSize" [maxSize]="maxPageSize" [firstText]="paginationButtonLabels.first"
+        [previousText]="paginationButtonLabels.previous" [responsive]="'true'" [nextText]="paginationButtonLabels.next"
+        [lastText]="paginationButtonLabels.last">
+      </pagination>
+    </div>
+  }
 </ng-template>
 
 <ng-template #empty>--</ng-template>

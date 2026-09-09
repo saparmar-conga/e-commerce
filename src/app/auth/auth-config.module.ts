@@ -18,7 +18,8 @@ export const httpLoaderFactory = () => {
         redirectUri = redirectUri.slice(0, -1);
       }
       return {
-        authority: authOptions.authEndpoint,
+        // Strip trailing slash so authority matches the OIDC issuer.
+        authority: authOptions.authEndpoint?.replace(/\/+$/, ''),
         redirectUrl: redirectUri,
         postLogoutRedirectUri: redirectUri,
         clientId: authOptions.spaClientId,
@@ -30,7 +31,11 @@ export const httpLoaderFactory = () => {
         ignoreNonceAfterRefresh: true,
         automaticSilentRenew: true,
         disableIdTokenValidation: true,
-        autoUserInfo: false
+        autoUserInfo: false,
+        // Host proxy 301 appends a trailing slash, so detect callback by code/state params, not a strict redirectUrl match (state/nonce/PKCE still validated).
+        checkRedirectUrlWhenCheckingIfIsCallback: false,
+        // Storefronts federate to a shared IdP by design (perf→qa, preview→prod), so the discovery issuer host differs from the configured authority.
+        strictIssuerValidationOnWellKnownRetrievalOff: true
       } as OpenIdConfiguration;
     })
   );

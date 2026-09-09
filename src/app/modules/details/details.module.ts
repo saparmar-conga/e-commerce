@@ -39,10 +39,10 @@ import { ComponentModule } from '../../components/component.module';
     ConfigurationSummaryModule,
     FormsModule,
     InputFieldModule,
-    BsDatepickerModule.forRoot(),
+    BsDatepickerModule,
     AddressModule,
-    TooltipModule.forRoot(),
-    BsDropdownModule.forRoot()
+    TooltipModule,
+    BsDropdownModule
   ],
   declarations: [DetailsLayoutComponent, DetailSectionComponent],
   exports: [DetailsLayoutComponent, DetailSectionComponent]

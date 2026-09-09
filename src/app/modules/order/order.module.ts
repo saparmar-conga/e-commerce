@@ -49,7 +49,7 @@ import { OrderDetailComponent } from './layout/order-details/order-detail.compon
     PricingModule,
     AddressModule,
     TranslateModule.forChild(),
-    TooltipModule.forRoot(),
+    TooltipModule,
     NgScrollbarModule,
     ButtonModule,
     LaddaModule,

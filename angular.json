@@ -38,8 +38,7 @@
             },
             "scripts": [
               "./node_modules/jquery/dist/jquery.min.js",
-              "./node_modules/popper.js/dist/umd/popper.min.js",
-              "./node_modules/bootstrap/dist/js/bootstrap.min.js"
+              "./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
             ],
             "allowedCommonJsDependencies": [
               "locale-currency",
@@ -101,14 +100,14 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "ecommerce:build"
+            "buildTarget": "ecommerce:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "ecommerce:build:production"
+              "buildTarget": "ecommerce:build:production"
             },
             "development": {
-              "browserTarget": "ecommerce:build:development"
+              "buildTarget": "ecommerce:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -116,7 +115,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "ecommerce:build"
+            "buildTarget": "ecommerce:build"
           }
         },
         "test": {
@@ -124,12 +123,12 @@
           "options": {
             "main": "src/test.ts",
             "polyfills": "src/polyfills.ts",
-            "tsConfig": "src/tsconfig.spec.json",
-            "karmaConfig": "src/karma.conf.js",
+            "tsConfig": "tsconfig.spec.json",
+            "karmaConfig": "karma.conf.js",
             "styles": [
               "./node_modules/bootstrap/dist/css/bootstrap.min.css",
               "./node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
-              "styles.css"
+              "src/styles.scss"
             ],
             "scripts": [],
             "assets": [
@@ -138,18 +137,6 @@
             ]
           }
         },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "src/tsconfig.json",
-              "src/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
-          }
-        }
       }
     }
   },

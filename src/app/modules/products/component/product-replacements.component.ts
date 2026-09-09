@@ -5,14 +5,15 @@ import { ConfigurationService } from '@congarevenuecloud/core';
  * @ignore
  */
 @Component({
-  selector: 'apt-product-replacements',
-  template: `
+    selector: 'apt-product-replacements',
+    template: `
     <ul class="list-group list-group-flush">
-      <li class="media list-group-item d-flex" *ngFor="let product of productList">
-        <img class="mr-3" [src]="product?.IconId | image" alt="Generic placeholder image"  height="60" width="75">
-        <div class="media-body">
+      @for (product of productList; track product.Id) {
+      <li class="list-group-item d-flex">
+        <img class="me-3" [src]="product?.IconId | image" alt="Generic placeholder image"  height="60" width="75">
+        <div class="flex-grow-1">
           <div class="d-flex justify-content-between">
-            <h6 class="font-weight-bold mb-0">{{product.Name}}</h6>
+            <h6 class="fw-bold mb-0">{{product.Name}}</h6>
             <apt-price [record]="product" [type]="'list'"></apt-price>
           </div>
           <small class="d-block">{{product.ProductCode}}</small>
@@ -21,15 +22,17 @@ import { ConfigurationService } from '@congarevenuecloud/core';
           </button>
         </div>
       </li>
+      }
     </ul>
   `,
-  styles: [`
+    styles: [`
     button .oi{
       font-size: smaller;
       margin-right: 5px;
     }
   `],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 
 /**

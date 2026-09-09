@@ -8,7 +8,8 @@ $roboto-font-path: "~roboto-fontface/fonts";
 
 // Required
 @import "variables";
-@import "ngx-toastr/toastr-bs4-alert";
+@import "bootstrap/scss/bootstrap.scss";
+@import "ngx-toastr/toastr-bs5-alert";
 @import "@ng-select/ng-select/themes/default.theme.css";
 
 @font-face {
@@ -138,11 +139,12 @@ address {
   right: 0;
   left: auto;
   opacity: 1;
+  border: none;
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, .175);
 }
 
 // mini-cart related fixes
-.list-group-item :first-child {
+.list-group-item img:first-child {
   margin-right: 0.313rem !important;
 }
 
@@ -153,8 +155,6 @@ address {
   line-height: 1.5;
 }
 
-.checkbox label,
-.radio label,
 label {
   font-size: inherit;
   line-height: inherit;
@@ -185,19 +185,6 @@ label {
   text-transform: uppercase;
   padding-top: 0.25rem;
   padding: 0.25rem 0.5rem;
-}
-
-.input-group-sm>.form-control:not(textarea),
-.input-group-sm>.custom-file-control:not(textarea),
-fieldset[disabled][disabled] .form-control,
-fieldset[disabled][disabled] .custom-file-control,
-.form-control.disabled,
-.disabled.custom-file-control,
-.form-control:disabled,
-.custom-file-control:disabled,
-.form-control[disabled],
-[disabled].custom-file-control {
-  line-height: $custom-select-height-sm;
 }
 
 app-cart apt-input-field[name="description"] textarea.form-control {
@@ -276,6 +263,19 @@ popover-container.Popover {
 
 .modal-content {
   background-color: transparent !important;
+  border: none;
+}
+
+// Hamburger menu sidebar must have white background
+// Needs to be global because ngx-bootstrap renders the modal outside Angular's component tree
+.modal-dialog.menu .modal-content {
+  background-color: $white !important;
+  height: 100vh;
+}
+
+// Bootstrap 5: restore Bootstrap 4 modal top position
+.modal-dialog:not(.modal-dialog-scrollable):not(.modal-fullscreen):not(.modal-dialog-centered):not(.menu) {
+  margin-top: 3rem;
 }
 
 .modal-space {
@@ -332,10 +332,7 @@ div.border-0 {
 }
 
 .close-button {
-  color: $white !important;
-  text-shadow: 0rem 0rem !important;
   opacity: 1 !important;
-  font-weight: $font-weight-normal !important;
 }
 
 popover-container.optionPopover {
@@ -407,9 +404,8 @@ apt-constraint-rule-alert {
     align-items: center;
     border-radius: inherit;
 
-    button.close {
+    .btn-close {
       padding-top: 0.8rem;
-      color: $black;
     }
   }
 
@@ -537,7 +533,7 @@ apt-price.chargeType {
 }
 
 app-cart-detail apt-line-item-table-row apt-input-field {
-  label.font-weight-bold {
+  label.fw-bold {
     margin-top: 0.2rem;
     padding-bottom: 0.35rem;
     margin-bottom: unset;
@@ -618,6 +614,28 @@ app-cart-detail apt-line-item-table-row apt-input-field {
       --bs-btn-disabled-border-color: transparent;
       --bs-btn-disabled-bg: transparent;
     }
+
+    &.btn-primary {
+      --bs-btn-disabled-bg: $primary;
+      --bs-btn-disabled-color: $white;
+      --bs-btn-disabled-border-color: $primary;
+      --bs-btn-disabled-opacity: 0.65;
+      background-color: $primary !important;
+      border-color: $primary !important;
+      color: $white !important;
+      opacity: 0.65 !important;
+    }
+
+    &.btn-outline-primary {
+      --bs-btn-disabled-color: $primary;
+      --bs-btn-disabled-border-color: $primary;
+      --bs-btn-disabled-bg: transparent;
+      --bs-btn-disabled-opacity: 0.65;
+      color: $primary !important;
+      border-color: $primary !important;
+      background-color: transparent !important;
+      opacity: 0.65 !important;
+    }
   }
 
   &.btn-outline-primary:hover,
@@ -682,15 +700,49 @@ app-cart-detail apt-line-item-table-row apt-input-field {
     font-size: $font-size-lg;
   }
 
-  .modal-header {
+  .modal-header.p-0 {
     .btn-close {
       position: absolute;
       right: 0.5rem;
       top: -1.5rem;
       opacity: 1;
-      font-size: large;
+      z-index: 1;
     }
   }
+}
+
+// Pagination
+.page-link {
+  color: $gray-700;
+  border: 1px solid $gray-300;
+}
+
+// Prevent Ladda button flash: default btnClass 'btn-outline-primary' briefly shows
+// before parent's [btnClass] input is applied. Ladda's transition:.3s ease all
+// makes this visible. Remove transition on the button element itself;
+// spinner/label children retain their own transitions for the zoom-in effect.
+.ladda-button {
+  transition: none !important;
+}
+
+// Hamburger menu — dark text for nav links and category links (covers child components)
+.modal-dialog.menu .list-group-item-action {
+  color: $gray-900;
+}
+
+// Fix ng-select height in facet-filter: Bootstrap 5 uses min-height on form-control
+// which doesn't constrain the outer element to ng-select's natural 36px height.
+// Setting explicit height matches the inner .ng-select-container height so content centers correctly.
+apt-facet-filter ng-select.form-control {
+  height: 36px;
+  min-height: 0;
+}
+
+// Suppress Bootstrap 5's focus ring on ng-select (ng-select manages its own focus via .ng-select-focused)
+ng-select.form-control:focus,
+ng-select.form-control:focus-within {
+  box-shadow: none;
+  border-color: var(--bs-form-control-border-color);
 }
 
 // Tooltips
@@ -963,15 +1015,6 @@ apt-add-to-cart {
   }
 }
 
-.modal-header {
-  .close-button {
-    color: white !important;
-    text-shadow: 0rem 0rem !important;
-    opacity: 1 !important;
-    font-weight: $font-weight-normal !important;
-  }
-}
-
 .fa-trash {
   color: #657888 !important;
 }
@@ -998,10 +1041,6 @@ ol.breadcrumb {
     line-height: $line-height-lg;
     color: $CC-secondary-hover;
   }
-}
-
-li.breadcrumb-item {
-  font-family: "Open Sans";
 }
 
 li.breadcrumb-item {
@@ -1087,21 +1126,6 @@ apt-table {
 
 .modal-content-background {
   background-color: white !important;
-}
-
-
-.navbar-toggler {
-  border: none;
-}
-
-.category-list {
-  display: flex;
-  flex: 1 1 auto;
-}
-
-.custom-checkbox .custom-control-label::before {
-  border: 0.09375rem solid !important;
-  border-radius: 0.2rem;
 }
 
 .btn:focus {

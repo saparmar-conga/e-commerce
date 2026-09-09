@@ -7,9 +7,10 @@ import { Cart, CartItem, CartService, ConstraintRuleService, ItemGroup, LineItem
 import { BatchActionService, RevalidateCartService, ExceptionService, ButtonAction, BatchSelectionService } from '@congarevenuecloud/elements';
 
 @Component({
-  selector: 'app-collaborative-cart',
-  templateUrl: './collaborative-cart.component.html',
-  styleUrls: ['./collaborative-cart.component.scss']
+    selector: 'app-collaborative-cart',
+    templateUrl: './collaborative-cart.component.html',
+    styleUrls: ['./collaborative-cart.component.scss'],
+    standalone: false
 })
 export class CollaborativeCartComponent {
 

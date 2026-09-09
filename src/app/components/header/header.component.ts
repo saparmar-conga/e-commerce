@@ -28,6 +28,7 @@ import { DsrService } from '../../services/dsr.service';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class HeaderComponent implements OnInit {
   pageTop: boolean = true;
